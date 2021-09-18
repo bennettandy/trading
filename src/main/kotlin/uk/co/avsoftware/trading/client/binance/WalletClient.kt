@@ -6,10 +6,7 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import uk.co.avsoftware.trading.client.binance.model.ApiKeyPermissions
-import uk.co.avsoftware.trading.client.binance.model.CoinInfo
-import uk.co.avsoftware.trading.client.binance.model.DustLog
-import uk.co.avsoftware.trading.client.binance.model.SystemStatus
+import uk.co.avsoftware.trading.client.binance.model.*
 import uk.co.avsoftware.trading.client.binance.sign.BinanceSigner
 
 @Component
@@ -22,7 +19,7 @@ class WalletClient(@Qualifier("binanceApiClient") val webClient: WebClient, val 
 
     fun getAllCoinsInfo(): Flux<CoinInfo> =
         with (binanceSigner){
-            webClient.get().uri("/sapi/v1/capital/config/getall/?${signQueryString(getTimestampQueryString())}")
+            webClient.get().uri("/sapi/v1/capital/config/getall?${signQueryString(getTimestampQueryString())}")
                 .accept(MediaType.APPLICATION_JSON)
                 .header("X-MBX-APIKEY", getApiKey() )
                 .retrieve()
@@ -31,11 +28,25 @@ class WalletClient(@Qualifier("binanceApiClient") val webClient: WebClient, val 
 
     fun getDustLog(): Mono<DustLog> =
         with (binanceSigner){
-            webClient.get().uri("/sapi/v1/asset/dribblet/?${signQueryString(getTimestampQueryString())}")
+            webClient.get().uri("/sapi/v1/asset/dribblet?${signQueryString(getTimestampQueryString())}")
                 .accept(MediaType.APPLICATION_JSON)
                 .header("X-MBX-APIKEY", getApiKey() )
                 .retrieve()
                 .bodyToMono(DustLog::class.java)
         }
 
+    fun getTradeFees(symbol: String?): Flux<TradeFee> =
+        with (binanceSigner){
+            webClient.get().uri("/sapi/v1/asset/tradeFee?${signQueryString(
+                when (symbol){
+                    null -> getTimestampQueryString()
+                    else -> "${getTimestampQueryString()}&symbol=${symbol}"
+                }
+            )
+            }")
+                .accept(MediaType.APPLICATION_JSON)
+                .header("X-MBX-APIKEY", getApiKey() )
+                .retrieve()
+                .bodyToFlux(TradeFee::class.java)
+        }
 }

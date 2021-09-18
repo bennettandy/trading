@@ -16,7 +16,7 @@ class WalletHandler(var walletClient: WalletClient) {
             .flatMap {
                 ServerResponse.ok()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(BodyInserters.fromValue(it.toString()))
+                    .body(BodyInserters.fromValue(it))
             }
 
     fun getAllCoinsInfo(): Mono<ServerResponse> =
@@ -25,7 +25,7 @@ class WalletHandler(var walletClient: WalletClient) {
             .flatMap {
                 ServerResponse.ok()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(BodyInserters.fromValue(it.toString()))
+                    .body(BodyInserters.fromValue(it))
             }
 
     fun getDustLog(): Mono<ServerResponse> =
@@ -33,6 +33,15 @@ class WalletHandler(var walletClient: WalletClient) {
             .flatMap {
                 ServerResponse.ok()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(BodyInserters.fromValue(it.toString()))
+                    .body(BodyInserters.fromValue(it))
+            }
+
+    fun getTradeFees(symbol: String?): Mono<ServerResponse> =
+        walletClient.getTradeFees(symbol)
+            .collectList()
+            .flatMap {
+                ServerResponse.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(BodyInserters.fromValue(it))
             }
 }

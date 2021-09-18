@@ -24,4 +24,8 @@ class MainRouter() {
                 .and(accept(MediaType.APPLICATION_JSON))) { walletHandler.systemStatus() }
             .andRoute(GET("/wallet/dust")
                 .and(accept(MediaType.APPLICATION_JSON))) { walletHandler.getDustLog() }
+            .andRoute(GET("/wallet/fees/{symbol}")
+                .and(accept(MediaType.APPLICATION_JSON))) { walletHandler.getTradeFees(it.pathVariable("symbol")) }
+            .andRoute(GET("/wallet/fees")
+                .and(accept(MediaType.APPLICATION_JSON))) { walletHandler.getTradeFees(null) }
 }
