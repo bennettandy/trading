@@ -1,0 +1,2 @@
+# trading
+Simple trading endpoint
