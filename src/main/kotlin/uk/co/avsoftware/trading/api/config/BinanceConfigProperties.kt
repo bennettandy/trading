@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component
 @ConfigurationProperties(prefix = "api.binance")
 data class BinanceConfigProperties(
     var description: String = "",
+    var uri: String = "",
     var key: String = "",
     var secret: String = ""
 )

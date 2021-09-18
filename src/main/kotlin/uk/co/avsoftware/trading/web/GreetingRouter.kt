@@ -16,8 +16,10 @@ class GreetingRouter(var binanceConfigProperties: BinanceConfigProperties) {
 
 
     @Bean
-    fun route(greetingHandler: GreetingHandler): RouterFunction<ServerResponse> =
+    fun route(greetingHandler: GreetingHandler, walletHandler: WalletHandler): RouterFunction<ServerResponse> =
         RouterFunctions.route(
             GET("/hello").and(accept(MediaType.APPLICATION_JSON)),
-            HandlerFunction { request -> greetingHandler.hello() })
+            HandlerFunction { _ -> greetingHandler.hello() })
+            .andRoute(GET("/wallet/status").and(accept(MediaType.APPLICATION_JSON)),
+                HandlerFunction { walletHandler.systemStatus() })
 }
