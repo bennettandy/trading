@@ -1,16 +1,16 @@
-package uk.co.avsoftware.trading.client.binance
+package uk.co.avsoftware.trading.client.binance.sign
 
 import org.springframework.stereotype.Component
+import uk.co.avsoftware.trading.api.config.BinanceConfigProperties
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
 @Component
-class Signature {
+class Signature( val binanceConfigProperties: BinanceConfigProperties) : BinanceSigner {
     fun ByteArray.toHex(): String = joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
 
     fun getSignature(data: String, key: String): String {
-        var hmacSha256: ByteArray? = null
-        hmacSha256 = try {
+        val hmacSha256: ByteArray? = try {
             val secretKeySpec = SecretKeySpec(key.toByteArray(), HMAC_SHA256)
             val mac = Mac.getInstance(HMAC_SHA256)
             mac.init(secretKeySpec)
@@ -20,6 +20,15 @@ class Signature {
         }
         return hmacSha256?.toHex() ?: ""
     }
+
+    override fun getTimestampQueryString(): String = "timestamp=${System.currentTimeMillis()}"
+
+    override fun getApiKey(): String = binanceConfigProperties.key
+
+    override fun signQueryString(queryString: String): String =
+        "${queryString}&signature=${sign(queryString)}"
+
+    private fun sign(message: String): String = getSignature(message, binanceConfigProperties.secret)
 
     companion object {
         private const val HMAC_SHA256 = "HmacSHA256"

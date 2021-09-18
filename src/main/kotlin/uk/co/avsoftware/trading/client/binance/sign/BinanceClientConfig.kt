@@ -1,4 +1,4 @@
-package uk.co.avsoftware.trading.client.binance
+package uk.co.avsoftware.trading.client.binance.sign
 
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean

@@ -18,4 +18,13 @@ class WalletHandler(var walletClient: WalletClient) {
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(BodyInserters.fromValue(it.toString()))
             }
+
+    fun getAllCoinsInfo(): Mono<ServerResponse> =
+        walletClient.getAllCoinsInfo()
+            .collectList()
+            .flatMap {
+                ServerResponse.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(BodyInserters.fromValue(it.toString()))
+            }
 }
