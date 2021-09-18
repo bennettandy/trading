@@ -22,4 +22,6 @@ class MainRouter() {
                 .and(accept(MediaType.APPLICATION_JSON))) { walletHandler.getAllCoinsInfo() }
             .andRoute(GET("/wallet/status")
                 .and(accept(MediaType.APPLICATION_JSON))) { walletHandler.systemStatus() }
+            .andRoute(GET("/wallet/dust")
+                .and(accept(MediaType.APPLICATION_JSON))) { walletHandler.getDustLog() }
 }

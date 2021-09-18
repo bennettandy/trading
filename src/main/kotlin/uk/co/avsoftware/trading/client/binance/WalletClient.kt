@@ -8,6 +8,7 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import uk.co.avsoftware.trading.client.binance.model.ApiKeyPermissions
 import uk.co.avsoftware.trading.client.binance.model.CoinInfo
+import uk.co.avsoftware.trading.client.binance.model.DustLog
 import uk.co.avsoftware.trading.client.binance.model.SystemStatus
 import uk.co.avsoftware.trading.client.binance.sign.BinanceSigner
 
@@ -26,6 +27,15 @@ class WalletClient(@Qualifier("binanceApiClient") val webClient: WebClient, val 
                 .header("X-MBX-APIKEY", getApiKey() )
                 .retrieve()
                 .bodyToFlux(CoinInfo::class.java)
+        }
+
+    fun getDustLog(): Mono<DustLog> =
+        with (binanceSigner){
+            webClient.get().uri("/sapi/v1/asset/dribblet/?${signQueryString(getTimestampQueryString())}")
+                .accept(MediaType.APPLICATION_JSON)
+                .header("X-MBX-APIKEY", getApiKey() )
+                .retrieve()
+                .bodyToMono(DustLog::class.java)
         }
 
 }
