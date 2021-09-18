@@ -1,0 +1,6 @@
+
+api:
+  binance:
+    description: "binance exchange api credentials"
+    key: "${BINANCE_KEY}"
+    secret: "${BINANCE_SECRET}"

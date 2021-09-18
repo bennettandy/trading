@@ -9,9 +9,11 @@ import org.springframework.web.reactive.function.server.RequestPredicates.accept
 import org.springframework.web.reactive.function.server.RouterFunction
 import org.springframework.web.reactive.function.server.RouterFunctions
 import org.springframework.web.reactive.function.server.ServerResponse
+import uk.co.avsoftware.trading.api.config.BinanceConfigProperties
 
 @Configuration(proxyBeanMethods = false)
-class GreetingRouter {
+class GreetingRouter(var binanceConfigProperties: BinanceConfigProperties) {
+
 
     @Bean
     fun route(greetingHandler: GreetingHandler): RouterFunction<ServerResponse> =
