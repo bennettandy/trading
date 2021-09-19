@@ -43,4 +43,16 @@ class MarketDataHandler(var marketDataClient: MarketDataClient) {
             .onErrorResume { error -> ServerResponse.badRequest()
                 .bodyValue(error.message ?: "null")
             }
+
+    fun getRecentTrades(orderBookRequest: OrderBookRequest): Mono<ServerResponse> =
+        marketDataClient.getRecentTrades(orderBookRequest)
+            .collectList()
+            .flatMap {
+                ServerResponse.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(BodyInserters.fromValue(it))
+            }
+            .onErrorResume { error -> ServerResponse.badRequest()
+                .bodyValue(error.message ?: "null")
+            }
 }

@@ -51,4 +51,6 @@ class MainRouter() {
                 .and(accept(MediaType.APPLICATION_JSON))) { marketData.getServerTime()}
             .andRoute(GET("/market/depth")
                 .and(accept(MediaType.APPLICATION_JSON))) { marketData.getOrderBookDepth(OrderBookRequest.from(it))}
+            .andRoute(GET("/market/trades")
+                .and(accept(MediaType.APPLICATION_JSON))) { marketData.getRecentTrades(OrderBookRequest.from(it))}
 }
