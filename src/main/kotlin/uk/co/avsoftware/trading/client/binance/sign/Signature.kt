@@ -2,11 +2,12 @@ package uk.co.avsoftware.trading.client.binance.sign
 
 import org.springframework.stereotype.Component
 import uk.co.avsoftware.trading.api.config.BinanceConfigProperties
+import java.time.Clock
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
 @Component
-class Signature( val binanceConfigProperties: BinanceConfigProperties) : BinanceSigner {
+class Signature( val binanceConfigProperties: BinanceConfigProperties, val clock: Clock ) : BinanceSigner {
     fun ByteArray.toHex(): String = joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
 
     fun getSignature(data: String, key: String): String {
@@ -20,9 +21,7 @@ class Signature( val binanceConfigProperties: BinanceConfigProperties) : Binance
         }
         return hmacSha256?.toHex() ?: ""
     }
-
-    override fun getTimestampQueryString(): String = "timestamp=${System.currentTimeMillis()}"
-
+    
     override fun getApiKey(): String = binanceConfigProperties.key
 
     override fun signQueryString(queryString: String): String =

@@ -1,4 +1,4 @@
-package uk.co.avsoftware.trading.web
+package uk.co.avsoftware.trading.web.handler
 
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
@@ -15,6 +15,6 @@ class ApiKeyHandler(var apiKeyClient: ApiKeyClient) {
             .flatMap {
                 ServerResponse.ok()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(BodyInserters.fromValue(it.toString()))
+                    .body(BodyInserters.fromValue(it))
             }
 }

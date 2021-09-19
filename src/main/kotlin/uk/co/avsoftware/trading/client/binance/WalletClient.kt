@@ -7,6 +7,8 @@ import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import uk.co.avsoftware.trading.client.binance.model.*
+import uk.co.avsoftware.trading.client.binance.parameters.BinanceRequest
+import uk.co.avsoftware.trading.client.binance.parameters.TradeFeesRequest
 import uk.co.avsoftware.trading.client.binance.sign.BinanceSigner
 
 @Component
@@ -19,7 +21,7 @@ class WalletClient(@Qualifier("binanceApiClient") val webClient: WebClient, val 
 
     fun getAllCoinsInfo(): Flux<CoinInfo> =
         with (binanceSigner){
-            webClient.get().uri("/sapi/v1/capital/config/getall?${signQueryString(getTimestampQueryString())}")
+            webClient.get().uri("/sapi/v1/capital/config/getall?${signQueryString(BinanceRequest().getQueryString())}")
                 .accept(MediaType.APPLICATION_JSON)
                 .header("X-MBX-APIKEY", getApiKey() )
                 .retrieve()
@@ -28,22 +30,17 @@ class WalletClient(@Qualifier("binanceApiClient") val webClient: WebClient, val 
 
     fun getDustLog(): Mono<DustLog> =
         with (binanceSigner){
-            webClient.get().uri("/sapi/v1/asset/dribblet?${signQueryString(getTimestampQueryString())}")
+            webClient.get().uri("/sapi/v1/asset/dribblet?${signQueryString(BinanceRequest().getQueryString())}")
                 .accept(MediaType.APPLICATION_JSON)
                 .header("X-MBX-APIKEY", getApiKey() )
                 .retrieve()
                 .bodyToMono(DustLog::class.java)
         }
 
-    fun getTradeFees(symbol: String?): Flux<TradeFee> =
+    fun getTradeFees(request: TradeFeesRequest): Flux<TradeFee> =
         with (binanceSigner){
-            webClient.get().uri("/sapi/v1/asset/tradeFee?${signQueryString(
-                when (symbol){
-                    null -> getTimestampQueryString()
-                    else -> "${getTimestampQueryString()}&symbol=${symbol}"
-                }
-            )
-            }")
+            webClient.get()
+                .uri("/sapi/v1/asset/tradeFee?${signQueryString(request.getQueryString())}")
                 .accept(MediaType.APPLICATION_JSON)
                 .header("X-MBX-APIKEY", getApiKey() )
                 .retrieve()

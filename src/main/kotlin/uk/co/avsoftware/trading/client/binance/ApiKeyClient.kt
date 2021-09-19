@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import uk.co.avsoftware.trading.client.binance.model.ApiKeyPermissions
+import uk.co.avsoftware.trading.client.binance.parameters.BinanceRequest
 import uk.co.avsoftware.trading.client.binance.sign.BinanceSigner
 
 @Component
@@ -13,7 +14,7 @@ class ApiKeyClient(@Qualifier("binanceApiClient") val webClient: WebClient, val 
 
     fun getApiKeyPermissions(): Mono<ApiKeyPermissions> =
         with (binanceSigner){
-            webClient.get().uri("/sapi/v1/account/apiRestrictions/?${signQueryString(getTimestampQueryString())}")
+            webClient.get().uri("/sapi/v1/account/apiRestrictions/?${signQueryString(BinanceRequest().getQueryString())}")
                 .accept(MediaType.APPLICATION_JSON)
                 .header("X-MBX-APIKEY", getApiKey() )
                 .retrieve()

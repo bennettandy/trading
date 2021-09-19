@@ -1,4 +1,4 @@
-package uk.co.avsoftware.trading.web
+package uk.co.avsoftware.trading.web.handler
 
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component

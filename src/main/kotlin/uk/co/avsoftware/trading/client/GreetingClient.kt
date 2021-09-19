@@ -4,7 +4,7 @@ import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
-import uk.co.avsoftware.trading.web.Greeting
+import uk.co.avsoftware.trading.web.handler.Greeting
 
 
 @Component

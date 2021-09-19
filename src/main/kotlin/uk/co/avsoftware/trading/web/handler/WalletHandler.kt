@@ -1,12 +1,12 @@
-package uk.co.avsoftware.trading.web
+package uk.co.avsoftware.trading.web.handler
 
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.server.ServerResponse
 import reactor.core.publisher.Mono
 import uk.co.avsoftware.trading.client.binance.WalletClient
+import uk.co.avsoftware.trading.client.binance.parameters.TradeFeesRequest
 
 @Component
 class WalletHandler(var walletClient: WalletClient) {
@@ -36,8 +36,8 @@ class WalletHandler(var walletClient: WalletClient) {
                     .body(BodyInserters.fromValue(it))
             }
 
-    fun getTradeFees(symbol: String?): Mono<ServerResponse> =
-        walletClient.getTradeFees(symbol)
+    fun getTradeFees(request: TradeFeesRequest): Mono<ServerResponse> =
+        walletClient.getTradeFees(request)
             .collectList()
             .flatMap {
                 ServerResponse.ok()

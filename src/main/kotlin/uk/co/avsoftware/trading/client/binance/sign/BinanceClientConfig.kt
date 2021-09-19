@@ -5,9 +5,13 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.reactive.function.client.WebClient
 import uk.co.avsoftware.trading.api.config.BinanceConfigProperties
+import java.time.Clock
 
 @Configuration
 class BinanceClientConfig {
+
+    @Bean
+    fun provideClock() = Clock.systemDefaultZone()
 
     @Bean
     @Qualifier("binanceApiClient")
