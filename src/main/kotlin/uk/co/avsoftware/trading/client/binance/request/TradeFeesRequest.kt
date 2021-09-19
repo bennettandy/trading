@@ -1,4 +1,4 @@
-package uk.co.avsoftware.trading.client.binance.parameters
+package uk.co.avsoftware.trading.client.binance.request
 
 import org.springframework.web.reactive.function.server.ServerRequest
 
@@ -7,7 +7,7 @@ data class TradeFeesRequest(
 ) : BinanceRequest() {
 
     override fun getQueryString(): String {
-        return with(StringBuilder(super.getQueryString())){
+        return StringBuilder(baseQueryString()).apply{
             symbol?.let { append("&symbol=${it}")}
         }.toString()
     }

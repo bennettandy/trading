@@ -7,8 +7,9 @@ import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import uk.co.avsoftware.trading.client.binance.model.*
-import uk.co.avsoftware.trading.client.binance.parameters.BinanceRequest
-import uk.co.avsoftware.trading.client.binance.parameters.TradeFeesRequest
+import uk.co.avsoftware.trading.client.binance.model.trade.TradeFee
+import uk.co.avsoftware.trading.client.binance.request.BinanceRequest
+import uk.co.avsoftware.trading.client.binance.request.TradeFeesRequest
 import uk.co.avsoftware.trading.client.binance.sign.BinanceSigner
 
 @Component
@@ -21,7 +22,7 @@ class WalletClient(@Qualifier("binanceApiClient") val webClient: WebClient, val 
 
     fun getAllCoinsInfo(): Flux<CoinInfo> =
         with (binanceSigner){
-            webClient.get().uri("/sapi/v1/capital/config/getall?${signQueryString(BinanceRequest().getQueryString())}")
+            webClient.get().uri("/sapi/v1/capital/config/getall?${signQueryString(BinanceRequest().baseQueryString())}")
                 .accept(MediaType.APPLICATION_JSON)
                 .header("X-MBX-APIKEY", getApiKey() )
                 .retrieve()
@@ -30,7 +31,7 @@ class WalletClient(@Qualifier("binanceApiClient") val webClient: WebClient, val 
 
     fun getDustLog(): Mono<DustLog> =
         with (binanceSigner){
-            webClient.get().uri("/sapi/v1/asset/dribblet?${signQueryString(BinanceRequest().getQueryString())}")
+            webClient.get().uri("/sapi/v1/asset/dribblet?${signQueryString(BinanceRequest().baseQueryString())}")
                 .accept(MediaType.APPLICATION_JSON)
                 .header("X-MBX-APIKEY", getApiKey() )
                 .retrieve()

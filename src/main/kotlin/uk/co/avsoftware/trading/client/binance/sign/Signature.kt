@@ -21,7 +21,7 @@ class Signature( val binanceConfigProperties: BinanceConfigProperties, val clock
         }
         return hmacSha256?.toHex() ?: ""
     }
-    
+
     override fun getApiKey(): String = binanceConfigProperties.key
 
     override fun signQueryString(queryString: String): String =

@@ -6,7 +6,7 @@ import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.server.ServerResponse
 import reactor.core.publisher.Mono
 import uk.co.avsoftware.trading.client.binance.WalletClient
-import uk.co.avsoftware.trading.client.binance.parameters.TradeFeesRequest
+import uk.co.avsoftware.trading.client.binance.request.TradeFeesRequest
 
 @Component
 class WalletHandler(var walletClient: WalletClient) {

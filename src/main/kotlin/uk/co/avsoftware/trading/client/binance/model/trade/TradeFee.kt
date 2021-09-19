@@ -1,4 +1,4 @@
-package uk.co.avsoftware.trading.client.binance.model
+package uk.co.avsoftware.trading.client.binance.model.trade
 
 import java.math.BigDecimal
 
