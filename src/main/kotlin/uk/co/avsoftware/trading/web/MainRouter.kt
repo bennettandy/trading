@@ -12,7 +12,6 @@ import uk.co.avsoftware.trading.client.binance.request.NewOrderRequest
 import uk.co.avsoftware.trading.client.binance.request.TradeFeesRequest
 import uk.co.avsoftware.trading.client.binance.request.TradeListRequest
 import uk.co.avsoftware.trading.web.handler.ApiKeyHandler
-import uk.co.avsoftware.trading.web.handler.GreetingHandler
 import uk.co.avsoftware.trading.web.handler.SpotTradeHandler
 import uk.co.avsoftware.trading.web.handler.WalletHandler
 
@@ -20,14 +19,12 @@ import uk.co.avsoftware.trading.web.handler.WalletHandler
 class MainRouter() {
 
     @Bean
-    fun route(greeting: GreetingHandler,
-              wallet: WalletHandler,
+    fun route( wallet: WalletHandler,
               apiKey: ApiKeyHandler,
               spotTrade: SpotTradeHandler
     ): RouterFunction<ServerResponse> =
         RouterFunctions.route(
-            GET("/hello").and(accept(MediaType.APPLICATION_JSON))) { greeting.hello() }
-            .andRoute(GET("/api/permissions")
+            GET("/api/permissions")
                 .and(accept(MediaType.APPLICATION_JSON))) { apiKey.getApiKeyPermissions() }
             .andRoute(GET("/wallet/coins")
                 .and(accept(MediaType.APPLICATION_JSON))) { wallet.getAllCoinsInfo() }
@@ -40,9 +37,7 @@ class MainRouter() {
             .andRoute(GET("/trade/account")
                 .and(accept(MediaType.APPLICATION_JSON))) { spotTrade.getAccountInformation() }
             .andRoute(GET("/trade/list")
-                .and(accept(MediaType.APPLICATION_JSON))) { spotTrade.getAccountTradeList(
-                TradeListRequest.from(it) // fixme
-            )}
+                .and(accept(MediaType.APPLICATION_JSON))) { spotTrade.getAccountTradeList(TradeListRequest.from(it))}
             .andRoute(GET("/trade/test/order")
                 .and(accept(MediaType.APPLICATION_JSON))) { spotTrade.testNewOrder(
                 NewOrderRequest.from(it)

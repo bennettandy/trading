@@ -1,0 +1,192 @@
+{
+	"info": {
+		"_postman_id": "634ddbc3-e4d6-4ae6-8353-1a8bf51c1e63",
+		"name": "Trading Microservice",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Api Permissions",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": null
+			},
+			"response": []
+		},
+		{
+			"name": "Wallet - All Coins info",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": null
+			},
+			"response": []
+		},
+		{
+			"name": "Wallet - System Status",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": null
+			},
+			"response": []
+		},
+		{
+			"name": "Wallet - Dust",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": null
+			},
+			"response": []
+		},
+		{
+			"name": "Walet - Fees",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": null
+			},
+			"response": []
+		},
+		{
+			"name": "Trade - Account information",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": null
+			},
+			"response": []
+		},
+		{
+			"name": "Trade - List - all params",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/trade/list?symbol=ETHBTC",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"trade",
+						"list"
+					],
+					"query": [
+						{
+							"key": "symbol",
+							"value": "ETHBTC",
+							"description": "String"
+						},
+						{
+							"key": "orderId",
+							"value": "",
+							"description": "Long",
+							"disabled": true
+						},
+						{
+							"key": "startTime",
+							"value": "",
+							"description": "Long",
+							"disabled": true
+						},
+						{
+							"key": "endTime",
+							"value": "",
+							"description": "Long",
+							"disabled": true
+						},
+						{
+							"key": "fromId",
+							"value": "",
+							"description": "Long",
+							"disabled": true
+						},
+						{
+							"key": "limit",
+							"value": null,
+							"description": "Int",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Trade - Test New Order",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/trade/test/order?symbol=ETHBTC&side=BUY&type=LIMIT&timeInForce=GTC&quantity=0.0001&price=0.0001",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"trade",
+						"test",
+						"order"
+					],
+					"query": [
+						{
+							"key": "symbol",
+							"value": "ETHBTC"
+						},
+						{
+							"key": "side",
+							"value": "BUY"
+						},
+						{
+							"key": "type",
+							"value": "LIMIT"
+						},
+						{
+							"key": "timeInForce",
+							"value": "GTC"
+						},
+						{
+							"key": "quantity",
+							"value": "0.0001"
+						},
+						{
+							"key": "price",
+							"value": "0.0001"
+						},
+						{
+							"key": "stopPrice",
+							"value": "0.0001",
+							"description": "Used with STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, and TAKE_PROFIT_LIMIT orders.",
+							"disabled": true
+						},
+						{
+							"key": "icebergQty",
+							"value": "0.0001",
+							"description": "Used with LIMIT, STOP_LOSS_LIMIT, and TAKE_PROFIT_LIMIT to create an iceberg order.",
+							"disabled": true
+						},
+						{
+							"key": "newClientOrderId",
+							"value": "order-123",
+							"description": "A unique id among open orders. Automatically generated if not sent.",
+							"disabled": true
+						},
+						{
+							"key": "newOrderRespType",
+							"value": "ACK",
+							"description": "// Set the response JSON. ACK, RESULT, or FULL; MARKET and LIMIT order types default to FULL, all other orders default to ACK.",
+							"disabled": true
+						},
+						{
+							"key": "quoteOrderQty",
+							"value": "0.0001",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
