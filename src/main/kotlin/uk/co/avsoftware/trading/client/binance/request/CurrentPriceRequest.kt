@@ -3,12 +3,12 @@ package uk.co.avsoftware.trading.client.binance.request
 import org.springframework.web.reactive.function.server.ServerRequest
 
 data class CurrentPriceRequest(
-    val symbol: String
+    val symbol: String?
 ) : BinanceRequest() {
 
     override fun getQueryString(): String {
         return StringBuilder().apply{
-            append("&symbol=${symbol}")
+            symbol?.let { append("&symbol=${it}") }
         }.toString()
     }
 
@@ -16,7 +16,7 @@ data class CurrentPriceRequest(
         fun from(request: ServerRequest): CurrentPriceRequest {
             return with (request) {
                 CurrentPriceRequest(
-                    symbol = pathVariable("symbol")
+                    symbol = queryParam("symbol").orElse(null)
                 )
             }
         }

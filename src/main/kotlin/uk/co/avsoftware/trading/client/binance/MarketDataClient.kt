@@ -62,4 +62,14 @@ class MarketDataClient(@Qualifier("binanceApiClient") val webClient: WebClient, 
                 { response -> response.bodyToMono(BinanceError::class.java).map { error -> IOException(error) } }
             )
             .bodyToMono(CurrentAveragePriceResponse::class.java)
+
+    fun get24HourPriceChange(currentPriceRequest: CurrentPriceRequest): Flux<PriceChangeResponse> =
+        webClient.get().uri("/api/v3/ticker/24hr?${currentPriceRequest.getQueryString()}")
+            .accept(MediaType.APPLICATION_JSON)
+            .retrieve()
+            .onStatus(
+                { it == HttpStatus.BAD_REQUEST },
+                { response -> response.bodyToMono(BinanceError::class.java).map { error -> IOException(error) } }
+            )
+            .bodyToFlux(PriceChangeResponse::class.java)
 }

@@ -187,6 +187,141 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Market - Ping",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/market/ping",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"market",
+						"ping"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Market - Depth",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/market/depth?symbol=ETHBTC",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"market",
+						"depth"
+					],
+					"query": [
+						{
+							"key": "symbol",
+							"value": "ETHBTC"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Market - Recent Trades",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/market/depth?symbol=ETHBTC",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"market",
+						"depth"
+					],
+					"query": [
+						{
+							"key": "symbol",
+							"value": "ETHBTC"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Market - Current Average Price",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/market/avgPrice?symbol=ETHBTC",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"market",
+						"avgPrice"
+					],
+					"query": [
+						{
+							"key": "symbol",
+							"value": "ETHBTC"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Market - Ticker 24 Hour",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/market/ticker/24hr",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"market",
+						"ticker",
+						"24hr"
+					],
+					"query": [
+						{
+							"key": "symbol",
+							"value": "ETHBTC",
+							"description": "optional",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Market - Server Time",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/market/time",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"market",
+						"time"
+					]
+				}
+			},
+			"response": []
 		}
 	]
 }

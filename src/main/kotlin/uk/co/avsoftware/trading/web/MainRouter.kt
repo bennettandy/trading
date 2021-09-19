@@ -50,6 +50,8 @@ class MainRouter() {
                 .and(accept(MediaType.APPLICATION_JSON))) { marketData.getOrderBookDepth(OrderBookRequest.from(it))}
             .andRoute(GET("/market/trades")
                 .and(accept(MediaType.APPLICATION_JSON))) { marketData.getRecentTrades(OrderBookRequest.from(it))}
-            .andRoute(GET("/market/{symbol}/current")
+            .andRoute(GET("/market/avgPrice")
                 .and(accept(MediaType.APPLICATION_JSON))) { marketData.getCurrentAveragePrice(CurrentPriceRequest.from(it))}
+            .andRoute(GET("/market/ticker/24hr")
+                .and(accept(MediaType.APPLICATION_JSON))) { marketData.get24HourPriceChange(CurrentPriceRequest.from(it))}
 }

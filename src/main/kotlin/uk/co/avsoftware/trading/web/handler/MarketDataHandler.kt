@@ -8,7 +8,6 @@ import reactor.core.publisher.Mono
 import uk.co.avsoftware.trading.client.binance.MarketDataClient
 import uk.co.avsoftware.trading.client.binance.request.CurrentPriceRequest
 import uk.co.avsoftware.trading.client.binance.request.OrderBookRequest
-import uk.co.avsoftware.trading.client.binance.response.CurrentAveragePriceResponse
 
 @Component
 class MarketDataHandler(var marketDataClient: MarketDataClient) {
@@ -60,6 +59,18 @@ class MarketDataHandler(var marketDataClient: MarketDataClient) {
 
     fun getCurrentAveragePrice(currentPriceRequest: CurrentPriceRequest): Mono<ServerResponse> =
         marketDataClient.getCurrentAveragePrice(currentPriceRequest)
+            .flatMap {
+                ServerResponse.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(BodyInserters.fromValue(it))
+            }
+            .onErrorResume { error -> ServerResponse.badRequest()
+                .bodyValue(error.message ?: "null")
+            }
+
+    fun get24HourPriceChange(currentPriceRequest: CurrentPriceRequest): Mono<ServerResponse> =
+        marketDataClient.get24HourPriceChange(currentPriceRequest)
+            .collectList()
             .flatMap {
                 ServerResponse.ok()
                     .contentType(MediaType.APPLICATION_JSON)
