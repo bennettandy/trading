@@ -36,6 +36,8 @@ class MainRouter() {
                 .and(accept(MediaType.APPLICATION_JSON))) { wallet.getAssetDetail(AssetDetailRequest.from(it)) }
             .andRoute(GET("/wallet/fees")
                 .and(accept(MediaType.APPLICATION_JSON))) { wallet.getTradeFees(TradeFeesRequest.from(it)) }
+            .andRoute(GET("/wallet/asset/get-funding-asset")
+                .and(accept(MediaType.APPLICATION_JSON))) { wallet.getFundingAsset(FundingAssetRequest.from(it)) }
             .andRoute(GET("/trade/account")
                 .and(accept(MediaType.APPLICATION_JSON))) { spotTrade.getAccountInformation() }
             .andRoute(GET("/trade/list")

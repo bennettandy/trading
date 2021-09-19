@@ -51,6 +51,59 @@
 			"response": []
 		},
 		{
+			"name": "Walet - Asset Detail",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/wallet/assetDetail?asset=BTCUSDT",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"wallet",
+						"assetDetail"
+					],
+					"query": [
+						{
+							"key": "asset",
+							"value": "BTCUSDT"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Walet - Get Funding Asset",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/wallet/asset/get-funding-asset?asset=BTCUSDT&needsBtcValuation=true",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"wallet",
+						"asset",
+						"get-funding-asset"
+					],
+					"query": [
+						{
+							"key": "asset",
+							"value": "BTCUSDT"
+						},
+						{
+							"key": "needsBtcValuation",
+							"value": "true"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Trade - Account information",
 			"request": {
 				"method": "GET",
@@ -284,7 +337,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{base_url}}/market/ticker/24hr",
+					"raw": "{{base_url}}/market/ticker/24hr?symbol=BTCUSDT&symbol=ETHBTC",
 					"host": [
 						"{{base_url}}"
 					],
@@ -296,9 +349,64 @@
 					"query": [
 						{
 							"key": "symbol",
-							"value": "ETHBTC",
-							"description": "optional",
-							"disabled": true
+							"value": "BTCUSDT",
+							"description": "optional"
+						},
+						{
+							"key": "symbol",
+							"value": "ETHBTC"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Market - Ticker Price",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/market/ticker/price?symbol=BTCUSDT",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"market",
+						"ticker",
+						"price"
+					],
+					"query": [
+						{
+							"key": "symbol",
+							"value": "BTCUSDT",
+							"description": "optional"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Market - Order Book Ticker Price",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/market/ticker/price?symbol=BTCUSDT",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"market",
+						"ticker",
+						"price"
+					],
+					"query": [
+						{
+							"key": "symbol",
+							"value": "BTCUSDT",
+							"description": "optional"
 						}
 					]
 				}
