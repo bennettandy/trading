@@ -12,6 +12,7 @@ import uk.co.avsoftware.trading.client.binance.request.NewOrderRequest
 import uk.co.avsoftware.trading.client.binance.request.TradeFeesRequest
 import uk.co.avsoftware.trading.client.binance.request.TradeListRequest
 import uk.co.avsoftware.trading.web.handler.ApiKeyHandler
+import uk.co.avsoftware.trading.web.handler.MarketDataHandler
 import uk.co.avsoftware.trading.web.handler.SpotTradeHandler
 import uk.co.avsoftware.trading.web.handler.WalletHandler
 
@@ -21,7 +22,8 @@ class MainRouter() {
     @Bean
     fun route( wallet: WalletHandler,
               apiKey: ApiKeyHandler,
-              spotTrade: SpotTradeHandler
+              spotTrade: SpotTradeHandler,
+               marketData: MarketDataHandler
     ): RouterFunction<ServerResponse> =
         RouterFunctions.route(
             GET("/api/permissions")
@@ -42,4 +44,8 @@ class MainRouter() {
                 .and(accept(MediaType.APPLICATION_JSON))) { spotTrade.testNewOrder(
                 NewOrderRequest.from(it)
             )}
+            .andRoute(GET("/market/ping")
+                .and(accept(MediaType.APPLICATION_JSON))) { marketData.pingServer()}
+            .andRoute(GET("/market/time")
+                .and(accept(MediaType.APPLICATION_JSON))) { marketData.getServerTime()}
 }
