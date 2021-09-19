@@ -5,11 +5,11 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import uk.co.avsoftware.trading.client.binance.request.CurrentPriceRequest
 import uk.co.avsoftware.trading.client.binance.request.OrderBookRequest
+import uk.co.avsoftware.trading.client.binance.request.SymbolPriceTickerRequest
 import uk.co.avsoftware.trading.client.binance.response.*
 import uk.co.avsoftware.trading.client.binance.sign.BinanceSigner
 import java.io.IOException
@@ -72,4 +72,24 @@ class MarketDataClient(@Qualifier("binanceApiClient") val webClient: WebClient, 
                 { response -> response.bodyToMono(BinanceError::class.java).map { error -> IOException(error) } }
             )
             .bodyToFlux(PriceChangeResponse::class.java)
+
+    fun getTickerPrice(symbolRequest: SymbolPriceTickerRequest): Flux<SymbolTickerResponse> =
+        webClient.get().uri("/api/v3/ticker/price?${symbolRequest.getQueryString()}")
+            .accept(MediaType.APPLICATION_JSON)
+            .retrieve()
+            .onStatus(
+                { it == HttpStatus.BAD_REQUEST },
+                { response -> response.bodyToMono(BinanceError::class.java).map { error -> IOException(error) } }
+            )
+            .bodyToFlux(SymbolTickerResponse::class.java)
+
+    fun getOrderBookTickerPrice(symbolRequest: SymbolPriceTickerRequest): Flux<SymbolOrderBookTickerResponse> =
+        webClient.get().uri("/api/v3/ticker/price?${symbolRequest.getQueryString()}")
+            .accept(MediaType.APPLICATION_JSON)
+            .retrieve()
+            .onStatus(
+                { it == HttpStatus.BAD_REQUEST },
+                { response -> response.bodyToMono(BinanceError::class.java).map { error -> IOException(error) } }
+            )
+            .bodyToFlux(SymbolOrderBookTickerResponse::class.java)
 }

@@ -1,6 +1,8 @@
 package uk.co.avsoftware.trading.client.binance
 
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.core.ParameterizedTypeReference
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
@@ -8,9 +10,13 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import uk.co.avsoftware.trading.client.binance.model.*
 import uk.co.avsoftware.trading.client.binance.model.trade.TradeFee
+import uk.co.avsoftware.trading.client.binance.request.AssetDetailRequest
 import uk.co.avsoftware.trading.client.binance.request.BinanceRequest
 import uk.co.avsoftware.trading.client.binance.request.TradeFeesRequest
+import uk.co.avsoftware.trading.client.binance.response.AssetDetail
+import uk.co.avsoftware.trading.client.binance.response.BinanceError
 import uk.co.avsoftware.trading.client.binance.sign.BinanceSigner
+import java.io.IOException
 
 @Component
 class WalletClient(@Qualifier("binanceApiClient") val webClient: WebClient, val binanceSigner: BinanceSigner) {
@@ -26,6 +32,11 @@ class WalletClient(@Qualifier("binanceApiClient") val webClient: WebClient, val 
                 .accept(MediaType.APPLICATION_JSON)
                 .header("X-MBX-APIKEY", getApiKey() )
                 .retrieve()
+                .onStatus(
+                    { it==HttpStatus.BAD_REQUEST },
+                    { response -> response.bodyToMono(BinanceError::class.java).map { error -> IOException(error) } }
+                )
+                .onStatus({ it.is5xxServerError }, { Mono.error( RuntimeException("Server is not responding"))})
                 .bodyToFlux(CoinInfo::class.java)
         }
 
@@ -35,6 +46,11 @@ class WalletClient(@Qualifier("binanceApiClient") val webClient: WebClient, val 
                 .accept(MediaType.APPLICATION_JSON)
                 .header("X-MBX-APIKEY", getApiKey() )
                 .retrieve()
+                .onStatus(
+                    { it==HttpStatus.BAD_REQUEST },
+                    { response -> response.bodyToMono(BinanceError::class.java).map { error -> IOException(error) } }
+                )
+                .onStatus({ it.is5xxServerError }, { Mono.error( RuntimeException("Server is not responding"))})
                 .bodyToMono(DustLog::class.java)
         }
 
@@ -45,6 +61,25 @@ class WalletClient(@Qualifier("binanceApiClient") val webClient: WebClient, val 
                 .accept(MediaType.APPLICATION_JSON)
                 .header("X-MBX-APIKEY", getApiKey() )
                 .retrieve()
+                .onStatus(
+                    { it==HttpStatus.BAD_REQUEST },
+                    { response -> response.bodyToMono(BinanceError::class.java).map { error -> IOException(error) } }
+                )
+                .onStatus({ it.is5xxServerError }, { Mono.error( RuntimeException("Server is not responding"))})
                 .bodyToFlux(TradeFee::class.java)
+        }
+
+    fun getAssetDetail(assetDetailRequest: AssetDetailRequest): Mono<Map<String,AssetDetail>> =
+        with (binanceSigner){
+            webClient.get().uri("/sapi/v1/asset/assetDetail?${signQueryString(assetDetailRequest.getQueryString())}")
+                .accept(MediaType.APPLICATION_JSON)
+                .header("X-MBX-APIKEY", getApiKey() )
+                .retrieve()
+                .onStatus(
+                    { it== HttpStatus.BAD_REQUEST },
+                    { response -> response.bodyToMono(BinanceError::class.java).map { error -> IOException(error) } }
+                )
+                .onStatus({ it.is5xxServerError }, { Mono.error( RuntimeException("Server is not responding"))})
+                .bodyToMono(object : ParameterizedTypeReference<Map<String,AssetDetail>>(){})
         }
 }

@@ -6,6 +6,7 @@ import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.server.ServerResponse
 import reactor.core.publisher.Mono
 import uk.co.avsoftware.trading.client.binance.WalletClient
+import uk.co.avsoftware.trading.client.binance.request.AssetDetailRequest
 import uk.co.avsoftware.trading.client.binance.request.TradeFeesRequest
 
 @Component
@@ -39,6 +40,14 @@ class WalletHandler(var walletClient: WalletClient) {
     fun getTradeFees(request: TradeFeesRequest): Mono<ServerResponse> =
         walletClient.getTradeFees(request)
             .collectList()
+            .flatMap {
+                ServerResponse.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(BodyInserters.fromValue(it))
+            }
+
+    fun getAssetDetail(assetDetailRequest: AssetDetailRequest): Mono<ServerResponse> =
+        walletClient.getAssetDetail(assetDetailRequest)
             .flatMap {
                 ServerResponse.ok()
                     .contentType(MediaType.APPLICATION_JSON)

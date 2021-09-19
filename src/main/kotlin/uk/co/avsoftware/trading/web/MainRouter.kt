@@ -32,6 +32,8 @@ class MainRouter() {
                 .and(accept(MediaType.APPLICATION_JSON))) { wallet.systemStatus() }
             .andRoute(GET("/wallet/dust")
                 .and(accept(MediaType.APPLICATION_JSON))) { wallet.getDustLog() }
+            .andRoute(GET("/wallet/assetDetail")
+                .and(accept(MediaType.APPLICATION_JSON))) { wallet.getAssetDetail(AssetDetailRequest.from(it)) }
             .andRoute(GET("/wallet/fees")
                 .and(accept(MediaType.APPLICATION_JSON))) { wallet.getTradeFees(TradeFeesRequest.from(it)) }
             .andRoute(GET("/trade/account")
@@ -54,4 +56,8 @@ class MainRouter() {
                 .and(accept(MediaType.APPLICATION_JSON))) { marketData.getCurrentAveragePrice(CurrentPriceRequest.from(it))}
             .andRoute(GET("/market/ticker/24hr")
                 .and(accept(MediaType.APPLICATION_JSON))) { marketData.get24HourPriceChange(CurrentPriceRequest.from(it))}
+            .andRoute(GET("/market/ticker/price")
+                .and(accept(MediaType.APPLICATION_JSON))) { marketData.getTickerPrice(SymbolPriceTickerRequest.from(it))}
+            .andRoute(GET("/market/ticker/bookTicker") // fixme: null responses
+                .and(accept(MediaType.APPLICATION_JSON))) { marketData.getOrderBookTickerPrice(SymbolPriceTickerRequest.from(it))}
 }
