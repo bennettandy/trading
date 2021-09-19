@@ -9,6 +9,7 @@ import org.springframework.web.reactive.function.server.RouterFunction
 import org.springframework.web.reactive.function.server.RouterFunctions
 import org.springframework.web.reactive.function.server.ServerResponse
 import uk.co.avsoftware.trading.client.binance.request.NewOrderRequest
+import uk.co.avsoftware.trading.client.binance.request.OrderBookRequest
 import uk.co.avsoftware.trading.client.binance.request.TradeFeesRequest
 import uk.co.avsoftware.trading.client.binance.request.TradeListRequest
 import uk.co.avsoftware.trading.web.handler.ApiKeyHandler
@@ -48,4 +49,6 @@ class MainRouter() {
                 .and(accept(MediaType.APPLICATION_JSON))) { marketData.pingServer()}
             .andRoute(GET("/market/time")
                 .and(accept(MediaType.APPLICATION_JSON))) { marketData.getServerTime()}
+            .andRoute(GET("/market/depth")
+                .and(accept(MediaType.APPLICATION_JSON))) { marketData.getOrderBookDepth(OrderBookRequest.from(it))}
 }
