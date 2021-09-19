@@ -8,11 +8,9 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import uk.co.avsoftware.trading.client.binance.request.CurrentPriceRequest
 import uk.co.avsoftware.trading.client.binance.request.OrderBookRequest
-import uk.co.avsoftware.trading.client.binance.response.BinanceError
-import uk.co.avsoftware.trading.client.binance.response.OrderBookResponse
-import uk.co.avsoftware.trading.client.binance.response.RecentTradeResponse
-import uk.co.avsoftware.trading.client.binance.response.ServerTimeResponse
+import uk.co.avsoftware.trading.client.binance.response.*
 import uk.co.avsoftware.trading.client.binance.sign.BinanceSigner
 import java.io.IOException
 
@@ -54,4 +52,14 @@ class MarketDataClient(@Qualifier("binanceApiClient") val webClient: WebClient, 
                 { response -> response.bodyToMono(BinanceError::class.java).map { error -> IOException(error) } }
             )
             .bodyToFlux(RecentTradeResponse::class.java)
+
+    fun getCurrentAveragePrice(currentPriceRequest: CurrentPriceRequest): Mono<CurrentAveragePriceResponse> =
+        webClient.get().uri("/api/v3/avgPrice?${currentPriceRequest.getQueryString()}")
+            .accept(MediaType.APPLICATION_JSON)
+            .retrieve()
+            .onStatus(
+                { it == HttpStatus.BAD_REQUEST },
+                { response -> response.bodyToMono(BinanceError::class.java).map { error -> IOException(error) } }
+            )
+            .bodyToMono(CurrentAveragePriceResponse::class.java)
 }

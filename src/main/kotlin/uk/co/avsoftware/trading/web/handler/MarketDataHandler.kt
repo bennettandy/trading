@@ -6,7 +6,9 @@ import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.server.ServerResponse
 import reactor.core.publisher.Mono
 import uk.co.avsoftware.trading.client.binance.MarketDataClient
+import uk.co.avsoftware.trading.client.binance.request.CurrentPriceRequest
 import uk.co.avsoftware.trading.client.binance.request.OrderBookRequest
+import uk.co.avsoftware.trading.client.binance.response.CurrentAveragePriceResponse
 
 @Component
 class MarketDataHandler(var marketDataClient: MarketDataClient) {
@@ -47,6 +49,17 @@ class MarketDataHandler(var marketDataClient: MarketDataClient) {
     fun getRecentTrades(orderBookRequest: OrderBookRequest): Mono<ServerResponse> =
         marketDataClient.getRecentTrades(orderBookRequest)
             .collectList()
+            .flatMap {
+                ServerResponse.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(BodyInserters.fromValue(it))
+            }
+            .onErrorResume { error -> ServerResponse.badRequest()
+                .bodyValue(error.message ?: "null")
+            }
+
+    fun getCurrentAveragePrice(currentPriceRequest: CurrentPriceRequest): Mono<ServerResponse> =
+        marketDataClient.getCurrentAveragePrice(currentPriceRequest)
             .flatMap {
                 ServerResponse.ok()
                     .contentType(MediaType.APPLICATION_JSON)

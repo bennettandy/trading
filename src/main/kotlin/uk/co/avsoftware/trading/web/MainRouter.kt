@@ -8,10 +8,7 @@ import org.springframework.web.reactive.function.server.RequestPredicates.accept
 import org.springframework.web.reactive.function.server.RouterFunction
 import org.springframework.web.reactive.function.server.RouterFunctions
 import org.springframework.web.reactive.function.server.ServerResponse
-import uk.co.avsoftware.trading.client.binance.request.NewOrderRequest
-import uk.co.avsoftware.trading.client.binance.request.OrderBookRequest
-import uk.co.avsoftware.trading.client.binance.request.TradeFeesRequest
-import uk.co.avsoftware.trading.client.binance.request.TradeListRequest
+import uk.co.avsoftware.trading.client.binance.request.*
 import uk.co.avsoftware.trading.web.handler.ApiKeyHandler
 import uk.co.avsoftware.trading.web.handler.MarketDataHandler
 import uk.co.avsoftware.trading.web.handler.SpotTradeHandler
@@ -53,4 +50,6 @@ class MainRouter() {
                 .and(accept(MediaType.APPLICATION_JSON))) { marketData.getOrderBookDepth(OrderBookRequest.from(it))}
             .andRoute(GET("/market/trades")
                 .and(accept(MediaType.APPLICATION_JSON))) { marketData.getRecentTrades(OrderBookRequest.from(it))}
+            .andRoute(GET("/market/{symbol}/current")
+                .and(accept(MediaType.APPLICATION_JSON))) { marketData.getCurrentAveragePrice(CurrentPriceRequest.from(it))}
 }
