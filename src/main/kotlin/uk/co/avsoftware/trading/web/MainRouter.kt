@@ -3,29 +3,31 @@ package uk.co.avsoftware.trading.web
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.MediaType
-import org.springframework.web.reactive.function.server.RequestPredicates.GET
-import org.springframework.web.reactive.function.server.RequestPredicates.accept
+import org.springframework.http.MediaType.APPLICATION_JSON
+import org.springframework.web.reactive.function.server.RequestPredicates.*
 import org.springframework.web.reactive.function.server.RouterFunction
 import org.springframework.web.reactive.function.server.RouterFunctions
 import org.springframework.web.reactive.function.server.ServerResponse
 import uk.co.avsoftware.trading.client.binance.request.*
-import uk.co.avsoftware.trading.web.handler.ApiKeyHandler
-import uk.co.avsoftware.trading.web.handler.MarketDataHandler
-import uk.co.avsoftware.trading.web.handler.SpotTradeHandler
-import uk.co.avsoftware.trading.web.handler.WalletHandler
+import uk.co.avsoftware.trading.web.handler.*
 
 @Configuration(proxyBeanMethods = false)
 class MainRouter() {
 
     @Bean
     fun route( wallet: WalletHandler,
+               handler: TradeHandler,
               apiKey: ApiKeyHandler,
               spotTrade: SpotTradeHandler,
                marketData: MarketDataHandler
     ): RouterFunction<ServerResponse> =
         RouterFunctions.route(
             GET("/api/permissions")
-                .and(accept(MediaType.APPLICATION_JSON))) { apiKey.getApiKeyPermissions() }
+                .and(accept(APPLICATION_JSON))) { apiKey.getApiKeyPermissions() }
+            .andRoute(POST("/webhook/open")
+                .and(accept(APPLICATION_JSON))) { WebHookOpenRequest.from(it).flatMap { handler.openOrder(it) }   }
+//            .andRoute(POST("/webhook/close")
+//                .and(accept(APPLICATION_JSON))) { handler.openOrder(WebHookCloseRequest.from(it)) }
             .andRoute(GET("/wallet/coins")
                 .and(accept(MediaType.APPLICATION_JSON))) { wallet.getAllCoinsInfo() }
             .andRoute(GET("/wallet/status")
