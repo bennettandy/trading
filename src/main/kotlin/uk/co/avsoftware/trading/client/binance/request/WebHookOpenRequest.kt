@@ -8,7 +8,7 @@ class WebHookOpenRequest(){
     var symbol: String = ""
     var side: String = ""
     var type: String = ""
-    var timeInForce: String = ""
+    var timeInForce: String? = null
     var quantity: String? = null
     var quoteOrderQty: String? = null
     var price: String? = null

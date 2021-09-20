@@ -9,6 +9,7 @@ import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.onErrorReturn
 import reactor.kotlin.core.publisher.toMono
 import uk.co.avsoftware.trading.client.binance.SpotTradeClient
+import uk.co.avsoftware.trading.client.binance.model.trade.NewOrderResponseType
 import uk.co.avsoftware.trading.client.binance.model.trade.OrderSide
 import uk.co.avsoftware.trading.client.binance.model.trade.OrderType
 import uk.co.avsoftware.trading.client.binance.model.trade.TimeInForce
@@ -20,17 +21,18 @@ import java.io.IOException
 @Component
 class TradeHandler(var tradeClient: SpotTradeClient) {
 
-    fun openOrder(openrequest: WebHookOpenRequest): Mono<ServerResponse> =
-        with (openrequest) {
-            tradeClient.testNewOrder(
+    fun openOrder(openRequest: WebHookOpenRequest): Mono<ServerResponse> =
+        with (openRequest) {
+            tradeClient.placeNewOrder(
                 NewOrderRequest(
                     symbol = symbol,
                     side = OrderSide.valueOf(side),
                     type = OrderType.valueOf(type),
-                    timeInForce = TimeInForce.valueOf(timeInForce),
+                    timeInForce = timeInForce?.let { TimeInForce.valueOf(it) },
                     quantity = quantity,
                     price = price,
                     newClientOrderId = newClientOrderId,
+                    newOrderRespType = NewOrderResponseType.RESULT
                 )
             )
                 .flatMap {
@@ -42,12 +44,14 @@ class TradeHandler(var tradeClient: SpotTradeClient) {
                     ServerResponse.badRequest()
                         .bodyValue(error.message ?: "null")
                 }
-            tradeClient.getAccountInformation()
-                .flatMap {
-                    ServerResponse.ok()
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body(BodyInserters.fromValue(it))
-                }
+
+
+//            tradeClient.getAccountInformation()
+//                .flatMap {
+//                    ServerResponse.ok()
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .body(BodyInserters.fromValue(it))
+//                }
         }
 
     fun getAccountTradeList(tradeListRequest: TradeListRequest): Mono<ServerResponse> =

@@ -21,11 +21,12 @@ class MainRouter() {
               spotTrade: SpotTradeHandler,
                marketData: MarketDataHandler
     ): RouterFunction<ServerResponse> =
-        RouterFunctions.route(
-            GET("/api/permissions")
+        RouterFunctions.route(GET("/api/permissions")
                 .and(accept(APPLICATION_JSON))) { apiKey.getApiKeyPermissions() }
             .andRoute(POST("/webhook/open")
-                .and(accept(APPLICATION_JSON))) { WebHookOpenRequest.from(it).flatMap { handler.openOrder(it) }   }
+                .and(accept(APPLICATION_JSON))) { WebHookOpenRequest.from(it).flatMap { request ->
+                handler.openOrder(request) }
+            }
 //            .andRoute(POST("/webhook/close")
 //                .and(accept(APPLICATION_JSON))) { handler.openOrder(WebHookCloseRequest.from(it)) }
             .andRoute(GET("/wallet/coins")
