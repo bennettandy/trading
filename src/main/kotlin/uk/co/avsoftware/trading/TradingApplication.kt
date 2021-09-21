@@ -8,4 +8,9 @@ class TradingApplication
 
 fun main(args: Array<String>) {
 	runApplication<TradingApplication>(*args)
+
+	//Read environmental variables:
+	//Read environmental variables:
+	val env = System.getenv()
+	println("BINANCE_KEY: " + env["BINANCE_KEY"])
 }
