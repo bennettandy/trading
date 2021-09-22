@@ -114,6 +114,6 @@ class TradingBot( val tradeClient: SpotTradeClient) {
             symbol = "BTCUSDT",
             side = OrderSide.SELL,
             type = OrderType.MARKET,
-            quantity = "0.01"
+            quantity = "0.025"
         )
 }
