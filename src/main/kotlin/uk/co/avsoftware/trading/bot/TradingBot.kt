@@ -23,15 +23,24 @@ class TradingBot( val tradeClient: SpotTradeClient) {
             if (isShort){
                 // close any short
                 tradeClient.placeNewOrder(longRequest())
-                    .doOnSuccess { isShort = false }
+                    .doOnSuccess {
+                        isShort = false
+                        println("Close Short Success")
+                    }
             } else Mono.empty()
 
         val result: Mono<ServerResponse> = if (!isLong) {
             tradeClient.placeNewOrder(longRequest())
                 .flatMap { closeShort }
                 .flatMap { ServerResponse.ok().build() }
-                .doOnSuccess { isLong = true }
-                .onErrorResume { ServerResponse.notFound().build() }
+                .doOnSuccess {
+                    isLong = true
+                    println("Open Long Success")
+                }
+                .onErrorResume {
+                    println("ERROR")
+                    ServerResponse.notFound().build()
+                }
         } else { ServerResponse.notFound().build() }
         return result
     }
@@ -51,10 +60,13 @@ class TradingBot( val tradeClient: SpotTradeClient) {
         println("SHORT TRIGGER : S $isShort, L $isLong" )
 
         val closeLong: Mono<OrderResponse> =
-        if (isLong){
+        if (isLong) {
             // close any long
             tradeClient.placeNewOrder(shortRequest())
-                .doOnSuccess { isLong = false }
+                .doOnSuccess {
+                    isLong = false
+                    println("Close Long Success")
+                }
         } else Mono.empty()
 
         val result: Mono<ServerResponse> = if (!isShort) {
@@ -62,8 +74,12 @@ class TradingBot( val tradeClient: SpotTradeClient) {
             tradeClient.placeNewOrder(shortRequest())
                 .flatMap { closeLong } // close long if we have one
                 .flatMap { ServerResponse.ok().build() }
-                .doOnSuccess { isShort = true }
-                .onErrorResume { ServerResponse.notFound().build() }
+                .doOnSuccess { isShort = true
+                    println("Open Short Success")
+                }
+                .onErrorResume {
+                    println("ERROR")
+                    ServerResponse.notFound().build() }
         } else { ServerResponse.notFound().build() }
         return result
     }
