@@ -8,6 +8,7 @@ import org.springframework.web.reactive.function.server.RequestPredicates.*
 import org.springframework.web.reactive.function.server.RouterFunction
 import org.springframework.web.reactive.function.server.RouterFunctions
 import org.springframework.web.reactive.function.server.ServerResponse
+import uk.co.avsoftware.trading.bot.TradingBot
 import uk.co.avsoftware.trading.client.binance.request.*
 import uk.co.avsoftware.trading.web.handler.*
 
@@ -19,7 +20,8 @@ class MainRouter() {
                handler: TradeHandler,
               apiKey: ApiKeyHandler,
               spotTrade: SpotTradeHandler,
-               marketData: MarketDataHandler
+               marketData: MarketDataHandler,
+               tradingBot: TradingBot
     ): RouterFunction<ServerResponse> =
         RouterFunctions.route(GET("/api/permissions")
                 .and(accept(APPLICATION_JSON))) { apiKey.getApiKeyPermissions() }
@@ -27,6 +29,16 @@ class MainRouter() {
                 .and(accept(APPLICATION_JSON))) { WebHookOpenRequest.from(it).flatMap { request ->
                 handler.openOrder(request) }
             }
+                // trading bot
+            .andRoute(POST("/bot/long")
+                .and(accept(MediaType.APPLICATION_JSON))) { tradingBot.longTrigger() }
+            .andRoute(POST("/bot/short")
+                .and(accept(MediaType.APPLICATION_JSON))) { tradingBot.shortTrigger() }
+            .andRoute(POST("/bot/short/tp")
+                .and(accept(MediaType.APPLICATION_JSON))) { tradingBot.shortTakeProfit() }
+            .andRoute(POST("/bot/long/tp")
+                .and(accept(MediaType.APPLICATION_JSON))) { tradingBot.longTakeProfit() }
+
 //            .andRoute(POST("/webhook/close")
 //                .and(accept(APPLICATION_JSON))) { handler.openOrder(WebHookCloseRequest.from(it)) }
             .andRoute(GET("/wallet/coins")

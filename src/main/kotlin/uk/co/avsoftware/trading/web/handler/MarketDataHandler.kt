@@ -26,6 +26,7 @@ class MarketDataHandler(var marketDataClient: MarketDataClient) {
 
     fun getServerTime(): Mono<ServerResponse> =
         marketDataClient.getServerTime()
+            .doOnSubscribe { println("GET SERVER TIME") }
             .flatMap {
                 ServerResponse.ok()
                     .contentType(MediaType.APPLICATION_JSON)
