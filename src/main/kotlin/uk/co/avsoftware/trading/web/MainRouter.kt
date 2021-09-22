@@ -27,8 +27,6 @@ class MainRouter() {
                 .and(accept(APPLICATION_JSON))) { WebHookOpenRequest.from(it).flatMap { request ->
                 handler.openOrder(request) }
             }
-//            .andRoute(POST("/webhook/close")
-//                .and(accept(APPLICATION_JSON))) { handler.openOrder(WebHookCloseRequest.from(it)) }
             .andRoute(GET("/wallet/coins")
                 .and(accept(MediaType.APPLICATION_JSON))) { wallet.getAllCoinsInfo() }
             .andRoute(GET("/wallet/status")
