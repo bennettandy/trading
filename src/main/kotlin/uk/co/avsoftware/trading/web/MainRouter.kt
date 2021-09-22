@@ -17,7 +17,6 @@ class MainRouter() {
 
     @Bean
     fun route( wallet: WalletHandler,
-               handler: TradeHandler,
               apiKey: ApiKeyHandler,
               spotTrade: SpotTradeHandler,
                marketData: MarketDataHandler,
@@ -25,10 +24,6 @@ class MainRouter() {
     ): RouterFunction<ServerResponse> =
         RouterFunctions.route(GET("/api/permissions")
                 .and(accept(APPLICATION_JSON))) { apiKey.getApiKeyPermissions() }
-            .andRoute(POST("/webhook/open")
-                .and(accept(APPLICATION_JSON))) { WebHookOpenRequest.from(it).flatMap { request ->
-                handler.openOrder(request) }
-            }
                 // trading bot
             .andRoute(POST("/bot/long")
                 .and(accept(MediaType.APPLICATION_JSON))) { tradingBot.longTrigger() }
@@ -38,9 +33,9 @@ class MainRouter() {
                 .and(accept(MediaType.APPLICATION_JSON))) { tradingBot.shortTakeProfit() }
             .andRoute(POST("/bot/long/tp")
                 .and(accept(MediaType.APPLICATION_JSON))) { tradingBot.longTakeProfit() }
-            .andRoute(POST("/bot/long/bullish")
+            .andRoute(POST("/bot/bullish")
                 .and(accept(MediaType.APPLICATION_JSON))) { tradingBot.bullish() }
-            .andRoute(POST("/bot/long/bearish")
+            .andRoute(POST("/bot/bearish")
                 .and(accept(MediaType.APPLICATION_JSON))) { tradingBot.bearish() }
 
             .andRoute(GET("/wallet/coins")
