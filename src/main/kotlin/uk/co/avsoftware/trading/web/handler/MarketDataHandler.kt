@@ -5,13 +5,14 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.server.ServerResponse
 import reactor.core.publisher.Mono
+import uk.co.avsoftware.trading.api.config.BinanceConfigProperties
 import uk.co.avsoftware.trading.client.binance.MarketDataClient
 import uk.co.avsoftware.trading.client.binance.request.CurrentPriceRequest
 import uk.co.avsoftware.trading.client.binance.request.OrderBookRequest
 import uk.co.avsoftware.trading.client.binance.request.SymbolPriceTickerRequest
 
 @Component
-class MarketDataHandler(var marketDataClient: MarketDataClient) {
+class MarketDataHandler(var marketDataClient: MarketDataClient, val binanceConfigProperties: BinanceConfigProperties) {
 
     fun pingServer(): Mono<ServerResponse> =
         marketDataClient.pingServer()
@@ -30,7 +31,8 @@ class MarketDataHandler(var marketDataClient: MarketDataClient) {
             .flatMap {
                 ServerResponse.ok()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(BodyInserters.fromValue(it))
+                    .body(BodyInserters.fromValue(binanceConfigProperties.key))
+                   // .body(BodyInserters.fromValue(it))
             }
             .onErrorResume { error -> ServerResponse.badRequest()
                 .bodyValue(error.message ?: "null")

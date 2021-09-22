@@ -38,7 +38,7 @@ class TradingBot( val tradeClient: SpotTradeClient) {
                     println("Open Long Success")
                 }
                 .onErrorResume {
-                    println("ERROR")
+                    println("ERROR: $it")
                     ServerResponse.notFound().build()
                 }
         } else { ServerResponse.notFound().build() }
