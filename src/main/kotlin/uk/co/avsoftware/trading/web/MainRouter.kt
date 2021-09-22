@@ -38,9 +38,11 @@ class MainRouter() {
                 .and(accept(MediaType.APPLICATION_JSON))) { tradingBot.shortTakeProfit() }
             .andRoute(POST("/bot/long/tp")
                 .and(accept(MediaType.APPLICATION_JSON))) { tradingBot.longTakeProfit() }
+            .andRoute(POST("/bot/long/bullish")
+                .and(accept(MediaType.APPLICATION_JSON))) { tradingBot.bullish() }
+            .andRoute(POST("/bot/long/bearish")
+                .and(accept(MediaType.APPLICATION_JSON))) { tradingBot.bearish() }
 
-//            .andRoute(POST("/webhook/close")
-//                .and(accept(APPLICATION_JSON))) { handler.openOrder(WebHookCloseRequest.from(it)) }
             .andRoute(GET("/wallet/coins")
                 .and(accept(MediaType.APPLICATION_JSON))) { wallet.getAllCoinsInfo() }
             .andRoute(GET("/wallet/status")

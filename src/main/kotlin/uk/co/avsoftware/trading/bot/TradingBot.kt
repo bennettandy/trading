@@ -59,6 +59,15 @@ class TradingBot( val tradeClient: SpotTradeClient) {
         return result
     }
 
+    fun bullish(): Mono<ServerResponse> {
+        println("BULLISH")
+        return ServerResponse.ok().build()
+    }
+
+    fun bearish(): Mono<ServerResponse> {
+        println("BEARISH")
+        return ServerResponse.ok().build()
+    }
 
     private fun longRequest() =
         NewOrderRequest(
