@@ -60,4 +60,23 @@ class SpotTradeClient(@Qualifier("binanceApiClient") val webClient: WebClient, v
                 .bodyToMono(OrderResponse::class.java)
 
         }
+
+    fun placeNewOrder(newOrderRequest: NewOrderRequest): Mono<OrderResponse> =
+        with (binanceSigner){
+            val queryString = signQueryString(newOrderRequest.getQueryString())
+            println("PLACE ORDER $queryString")
+            webClient.post().uri("/api/v3/order?${queryString}")
+                .accept(MediaType.APPLICATION_JSON)
+                .header("X-MBX-APIKEY", getApiKey() )
+                .retrieve()
+                .onStatus(
+                    { it==HttpStatus.BAD_REQUEST },
+                    { response -> response.bodyToMono(BinanceError::class.java).map { error -> IOException(error) } }
+                )
+                .onStatus({ it.is5xxServerError }, { Mono.error( RuntimeException("Server is not responding"))})
+                .bodyToMono(OrderResponse::class.java)
+                .doOnSuccess { println("SUCCESS: $it") }
+
+
+        }
 }

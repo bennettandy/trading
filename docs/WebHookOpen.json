@@ -1,9 +1,7 @@
 {
-  "symbol": "BTCUSDT",
+  "symbol": "ETHUSDT",
   "side": "BUY",
   "type": "MARKET",
   "timeInForce": "GTC",
-  "quantity": 128.005,
-  "price": 125,
-  "newClientOrderId": "btc-order-1"
+  "quantity": 0.01
 }

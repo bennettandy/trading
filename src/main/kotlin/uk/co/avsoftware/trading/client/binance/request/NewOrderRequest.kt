@@ -10,11 +10,11 @@ data class NewOrderRequest(
     val symbol: String,
     val side: OrderSide, // enum
     val type: OrderType, // enum
-    val timeInForce: TimeInForce?, // enum
+    val timeInForce: TimeInForce? = null, // enum
     val quantity: String?,
     val quoteOrderQty: String? = null,
-    val price: String?,
-    val newClientOrderId: String?, // A unique id among open orders. Automatically generated if not sent.
+    val price: String? = null,
+    val newClientOrderId: String? = null, // A unique id among open orders. Automatically generated if not sent.
     val stopPrice: String? = null, // Used with STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, and TAKE_PROFIT_LIMIT orders.
     val icebergQty: String? = null, // Used with LIMIT, STOP_LOSS_LIMIT, and TAKE_PROFIT_LIMIT to create an iceberg order.
     val newOrderRespType: NewOrderResponseType? = null, // Set the response JSON. ACK, RESULT, or FULL; MARKET and LIMIT order types default to FULL, all other orders default to ACK.

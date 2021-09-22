@@ -8,6 +8,7 @@ import org.springframework.web.reactive.function.server.RequestPredicates.*
 import org.springframework.web.reactive.function.server.RouterFunction
 import org.springframework.web.reactive.function.server.RouterFunctions
 import org.springframework.web.reactive.function.server.ServerResponse
+import uk.co.avsoftware.trading.bot.TradingBot
 import uk.co.avsoftware.trading.client.binance.request.*
 import uk.co.avsoftware.trading.web.handler.*
 
@@ -16,18 +17,27 @@ class MainRouter() {
 
     @Bean
     fun route( wallet: WalletHandler,
-               handler: TradeHandler,
               apiKey: ApiKeyHandler,
               spotTrade: SpotTradeHandler,
-               marketData: MarketDataHandler
+               marketData: MarketDataHandler,
+               tradingBot: TradingBot
     ): RouterFunction<ServerResponse> =
-        RouterFunctions.route(
-            GET("/api/permissions")
+        RouterFunctions.route(GET("/api/permissions")
                 .and(accept(APPLICATION_JSON))) { apiKey.getApiKeyPermissions() }
-            .andRoute(POST("/webhook/open")
-                .and(accept(APPLICATION_JSON))) { WebHookOpenRequest.from(it).flatMap { handler.openOrder(it) }   }
-//            .andRoute(POST("/webhook/close")
-//                .and(accept(APPLICATION_JSON))) { handler.openOrder(WebHookCloseRequest.from(it)) }
+                // trading bot
+            .andRoute(POST("/bot/long")
+                .and(accept(MediaType.APPLICATION_JSON))) { tradingBot.longTrigger() }
+            .andRoute(POST("/bot/short")
+                .and(accept(MediaType.APPLICATION_JSON))) { tradingBot.shortTrigger() }
+            .andRoute(POST("/bot/short/tp")
+                .and(accept(MediaType.APPLICATION_JSON))) { tradingBot.shortTakeProfit() }
+            .andRoute(POST("/bot/long/tp")
+                .and(accept(MediaType.APPLICATION_JSON))) { tradingBot.longTakeProfit() }
+            .andRoute(POST("/bot/bullish")
+                .and(accept(MediaType.APPLICATION_JSON))) { tradingBot.bullish() }
+            .andRoute(POST("/bot/bearish")
+                .and(accept(MediaType.APPLICATION_JSON))) { tradingBot.bearish() }
+
             .andRoute(GET("/wallet/coins")
                 .and(accept(MediaType.APPLICATION_JSON))) { wallet.getAllCoinsInfo() }
             .andRoute(GET("/wallet/status")

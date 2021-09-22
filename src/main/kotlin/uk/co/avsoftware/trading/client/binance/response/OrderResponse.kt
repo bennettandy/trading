@@ -8,11 +8,11 @@ import java.math.BigDecimal
 
 data class OrderResponse(
     // ACK
-    val symbol: String,
-    val orderId: Long,
-    val orderListId: Long,
-    val clientOrderId: String,
-    val transactTime: Long,
+    val symbol: String?,
+    val orderId: Long?,
+    val orderListId: Long?,
+    val clientOrderId: String?,
+    val transactTime: Long?,
     // RESULT
     val price: BigDecimal?,
     val origQty: BigDecimal?,
