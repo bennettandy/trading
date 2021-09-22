@@ -18,8 +18,8 @@ data class OrderBookRequest(
         fun from(request: ServerRequest): OrderBookRequest {
             return with (request) {
                 OrderBookRequest(
-                    symbol = queryParam("symbol").orElseThrow(),
-                    limit = queryParam("limit").map { it.toInt() }.orElse(null)
+                    symbol = queryParam("symbol").get(),
+                    limit = queryParam("limit").map { it.toInt() }.get()
                 )
             }
         }

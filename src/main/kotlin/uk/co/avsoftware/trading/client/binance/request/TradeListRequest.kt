@@ -27,12 +27,12 @@ data class TradeListRequest(
         fun from(request: ServerRequest): TradeListRequest {
             return with (request) {
                 TradeListRequest(
-                    symbol = queryParam("symbol").orElseThrow(),
-                    orderId = queryParam("orderId").map { it.toLong() }.orElse(null),
-                    startTime = queryParam("startTime").map { it.toLong() }.orElse(null),
-                    endTime = queryParam("endTime").map { it.toLong() }.orElse(null),
-                    fromId = queryParam("fromId").map { it.toLong() }.orElse(null),
-                    limit = queryParam("limit").map { it.toInt() }.orElse(null),
+                    symbol = queryParam("symbol").get(),
+                    orderId = queryParam("orderId").map { it.toLong() }.get(),
+                    startTime = queryParam("startTime").map { it.toLong() }.get(),
+                    endTime = queryParam("endTime").map { it.toLong() }.get(),
+                    fromId = queryParam("fromId").map { it.toLong() }.get(),
+                    limit = queryParam("limit").map { it.toInt() }.get(),
                 )
             }
         }

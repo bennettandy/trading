@@ -5,3 +5,9 @@ api:
     uri: "https://api.binance.com"
     key: "${BINANCE_KEY}"
     secret: "${BINANCE_SECRET}"
+
+# logging
+logging:
+  level:
+    root: WARN
+    uk.co.avsoftware: DEBUG
