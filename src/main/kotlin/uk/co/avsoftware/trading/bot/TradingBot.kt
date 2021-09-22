@@ -1,5 +1,6 @@
 package uk.co.avsoftware.trading.bot
 
+import mu.KotlinLogging
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.ServerResponse
 import reactor.core.publisher.Mono
@@ -12,12 +13,14 @@ import uk.co.avsoftware.trading.client.binance.response.OrderResponse
 @Component
 class TradingBot( val tradeClient: SpotTradeClient) {
 
+    private val logger = KotlinLogging.logger {}
+
     var isLong: Boolean = false
     var isShort: Boolean = false
 
 
     fun longTrigger(): Mono<ServerResponse> {
-        println("LONG TRIGGER : S $isShort, L $isLong")
+        logger.info("LONG TRIGGER : S $isShort, L $isLong")
 
         val closeShort: Mono<OrderResponse> =
             if (isShort){
@@ -25,7 +28,7 @@ class TradingBot( val tradeClient: SpotTradeClient) {
                 tradeClient.placeNewOrder(longRequest())
                     .doOnSuccess {
                         isShort = false
-                        println("Close Short Success")
+                        logger.info("Close Short Success")
                     }
             } else Mono.empty()
 
@@ -35,10 +38,10 @@ class TradingBot( val tradeClient: SpotTradeClient) {
                 .flatMap { ServerResponse.ok().build() }
                 .doOnSuccess {
                     isLong = true
-                    println("Open Long Success")
+                    logger.info("Open Long Success")
                 }
                 .onErrorResume {
-                    println("ERROR: $it")
+                    logger.error("ERROR: $it")
                     ServerResponse.notFound().build()
                 }
         } else { ServerResponse.notFound().build() }
@@ -46,7 +49,7 @@ class TradingBot( val tradeClient: SpotTradeClient) {
     }
 
     fun longTakeProfit(): Mono<ServerResponse> {
-        println("LONG TP : S $isShort, L $isLong")
+        logger.info("LONG TP : S $isShort, L $isLong")
         val result: Mono<ServerResponse> = if (isLong) {
             tradeClient.placeNewOrder(shortRequest())
                 .flatMap { ServerResponse.ok().build() }
@@ -57,7 +60,7 @@ class TradingBot( val tradeClient: SpotTradeClient) {
     }
 
     fun shortTrigger(): Mono<ServerResponse> {
-        println("SHORT TRIGGER : S $isShort, L $isLong" )
+        logger.info("SHORT TRIGGER : S $isShort, L $isLong" )
 
         val closeLong: Mono<OrderResponse> =
         if (isLong) {
@@ -65,7 +68,7 @@ class TradingBot( val tradeClient: SpotTradeClient) {
             tradeClient.placeNewOrder(shortRequest())
                 .doOnSuccess {
                     isLong = false
-                    println("Close Long Success")
+                    logger.info("Close Long Success")
                 }
         } else Mono.empty()
 
@@ -75,17 +78,17 @@ class TradingBot( val tradeClient: SpotTradeClient) {
                 .flatMap { closeLong } // close long if we have one
                 .flatMap { ServerResponse.ok().build() }
                 .doOnSuccess { isShort = true
-                    println("Open Short Success")
+                    logger.info("Open Short Success")
                 }
                 .onErrorResume {
-                    println("ERROR")
+                    logger.error("ERROR", it)
                     ServerResponse.notFound().build() }
         } else { ServerResponse.notFound().build() }
         return result
     }
 
     fun shortTakeProfit(): Mono<ServerResponse> {
-        println("SHORT TP : S $isShort, L $isLong")
+        logger.info("SHORT TP : S $isShort, L $isLong")
 
         val result: Mono<ServerResponse> = if (isShort) {
             // we are short - place long order to TP
@@ -100,12 +103,12 @@ class TradingBot( val tradeClient: SpotTradeClient) {
     }
 
     fun bullish(): Mono<ServerResponse> {
-        println("BULLISH")
+        logger.info("BULLISH")
         return ServerResponse.ok().build()
     }
 
     fun bearish(): Mono<ServerResponse> {
-        println("BEARISH")
+        logger.info("BEARISH")
         return ServerResponse.ok().build()
     }
 

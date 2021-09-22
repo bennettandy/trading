@@ -18,7 +18,7 @@ data class OrderBookRequest(
         fun from(request: ServerRequest): OrderBookRequest {
             return with (request) {
                 OrderBookRequest(
-                    symbol = queryParam("symbol").get(),
+                    symbol = queryParam("symbol").orElse(""),
                     limit = queryParam("limit").map { it.toInt() }.get()
                 )
             }
