@@ -40,18 +40,18 @@ data class NewOrderRequest(
         fun from(request: ServerRequest): NewOrderRequest =
             with(request) {
                 NewOrderRequest(
-                    symbol = queryParam("symbol").orElseThrow(),
-                    side = queryParam("side").map { OrderSide.valueOf(it) }.orElseThrow(),
-                    type = queryParam("type").map { OrderType.valueOf(it) }.orElseThrow(),
-                    timeInForce = queryParam("timeInForce").map { TimeInForce.valueOf(it) }.orElse(null),
-                    quantity = queryParam("quantity").orElse(null),
-                    quoteOrderQty = queryParam("quoteOrderQty").orElse(null),
-                    price = queryParam("price").orElse(null),
-                    newClientOrderId = queryParam("newClientOrderId").orElse(null),
-                    stopPrice = queryParam("stopPrice").orElse(null),
-                    icebergQty = queryParam("icebergQty").orElse(null),
+                    symbol = queryParam("symbol").get(),
+                    side = queryParam("side").map { OrderSide.valueOf(it) }.get(),
+                    type = queryParam("type").map { OrderType.valueOf(it) }.get(),
+                    timeInForce = queryParam("timeInForce").map { TimeInForce.valueOf(it) }.get(),
+                    quantity = queryParam("quantity").get(),
+                    quoteOrderQty = queryParam("quoteOrderQty").get(),
+                    price = queryParam("price").get(),
+                    newClientOrderId = queryParam("newClientOrderId").get(),
+                    stopPrice = queryParam("stopPrice").get(),
+                    icebergQty = queryParam("icebergQty").get(),
                     newOrderRespType = queryParam("newOrderRespType").map { NewOrderResponseType.valueOf(it) }
-                        .orElse(null),
+                        .get(),
                 )
             }
     }
