@@ -16,11 +16,16 @@ class TradingApplication {
 
     private val logger = KotlinLogging.logger {}
 
+	@Value("\${sm//:binance-api-key}")
+	val apiKey: String? = null
+
     @Autowired
     lateinit var binanceConfigProperties: BinanceConfigProperties
 
     @PostConstruct
     fun validateConfig() {
+		logger.info("API KEY $apiKey")
+
 		with (binanceConfigProperties) {
 			if (key.isEmpty()) {
 				logger.error("Missing Binance Api Key")
