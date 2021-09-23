@@ -122,17 +122,17 @@ class TradingBot( val tradeClient: SpotTradeClient) {
 
     private fun longRequest() =
         NewOrderRequest(
-            symbol = "BTCUSDT",
+            symbol = "SOLBTC",
             side = OrderSide.BUY,
             type = OrderType.MARKET,
-            quantity = "0.01"
+            quantity = "5.0"
         )
 
     private fun shortRequest() =
         NewOrderRequest(
-            symbol = "BTCUSDT",
+            symbol = "SOLBTC",
             side = OrderSide.SELL,
             type = OrderType.MARKET,
-            quantity = "0.025"
+            quantity = "5.0"
         )
 }
