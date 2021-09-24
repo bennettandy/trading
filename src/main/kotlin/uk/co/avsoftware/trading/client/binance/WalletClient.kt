@@ -79,7 +79,8 @@ class WalletClient(@Qualifier("binanceApiClient") val webClient: WebClient, val 
                 .retrieve()
                 .onStatus(
                     { it== HttpStatus.BAD_REQUEST },
-                    { response -> response.bodyToMono(BinanceError::class.java).map { error -> IOException(error) } }
+                    { response -> response.bodyToMono(BinanceError::class.java)
+                        .map { error -> IOException(error) } }
                 )
                 .onStatus({ it.is5xxServerError }, { Mono.error( RuntimeException("Server is not responding"))})
                 .bodyToMono(object : ParameterizedTypeReference<Map<String,AssetDetail>>(){})
