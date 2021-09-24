@@ -1,3 +1,14 @@
+# logging
+logging:
+  level:
+    root: WARN
+    uk.co.avsoftware: DEBUG
+
+spring:
+  application:
+    name: "trading"
+  profiles:
+    active: "local"
 
 api:
   binance:
@@ -6,8 +17,13 @@ api:
     key: "${BINANCE_KEY}"
     secret: "${BINANCE_SECRET}"
 
-# logging
-logging:
-  level:
-    root: WARN
-    uk.co.avsoftware: DEBUG
+---
+spring:
+  profiles: production
+
+---
+spring:
+  profiles: local
+
+
+

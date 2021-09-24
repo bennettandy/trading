@@ -7,8 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
+import org.springframework.context.annotation.DependsOn
 import uk.co.avsoftware.trading.api.config.BinanceConfigProperties
 import uk.co.avsoftware.trading.client.binance.sign.BinanceClientConfig
+import uk.co.avsoftware.trading.database.model.Person
+import uk.co.avsoftware.trading.database.service.PersonService
+import java.util.function.Consumer
 import javax.annotation.PostConstruct
 
 @SpringBootApplication
@@ -16,15 +20,11 @@ class TradingApplication {
 
     private val logger = KotlinLogging.logger {}
 
-//	@Value("\${sm//:binance-api-key}")
-//	val apiKey: String? = null
-
     @Autowired
     lateinit var binanceConfigProperties: BinanceConfigProperties
 
     @PostConstruct
     fun validateConfig() {
-//		logger.info("API KEY $apiKey")
 
 		with (binanceConfigProperties) {
 			if (key.isEmpty()) {

@@ -1,0 +1,26 @@
+# logging
+logging:
+  level:
+    root: WARN
+    uk.co.avsoftware: DEBUG
+
+spring:
+  profiles:
+    active: "local"
+
+---
+spring:
+  profiles: production
+  cloud:
+    gcp:
+      secretmanager:
+        enabled: false
+        project-id:
+
+---
+spring:
+  profiles: local
+  cloud:
+    gcp:
+      secretmanager:
+        enabled: false
