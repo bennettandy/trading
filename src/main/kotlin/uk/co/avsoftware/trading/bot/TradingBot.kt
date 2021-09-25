@@ -22,7 +22,7 @@ class TradingBot( val tradeClient: SpotTradeClient) {
     fun longTrigger(): Mono<ServerResponse> {
         logger.info("LONG TRIGGER : S $isShort, L $isLong")
 
-        val closeShort: Mono<OrderResponse> =
+        val closeShort: Mono<String> =
             if (isShort){
                 // close any short
                 tradeClient.placeNewOrder(longRequest())
@@ -62,7 +62,7 @@ class TradingBot( val tradeClient: SpotTradeClient) {
     fun shortTrigger(): Mono<ServerResponse> {
         logger.info("SHORT TRIGGER : S $isShort, L $isLong" )
 
-        val closeLong: Mono<OrderResponse> =
+        val closeLong: Mono<String> =
         if (isLong) {
             // close any long
             tradeClient.placeNewOrder(shortRequest())
@@ -112,11 +112,11 @@ class TradingBot( val tradeClient: SpotTradeClient) {
         return ServerResponse.ok().build()
     }
 
-    private fun placeLong(): Mono<OrderResponse> =
+    private fun placeLong(): Mono<String> =
             tradeClient.placeNewOrder(longRequest())
                 .doOnSuccess { isLong = true }
 
-    private fun placeShort(): Mono<OrderResponse> =
+    private fun placeShort(): Mono<String> =
         tradeClient.placeNewOrder(shortRequest())
             .doOnSuccess { isShort = true }
 
@@ -125,7 +125,7 @@ class TradingBot( val tradeClient: SpotTradeClient) {
             symbol = "SOLBTC",
             side = OrderSide.BUY,
             type = OrderType.MARKET,
-            quantity = "5.0"
+            quantity = "10.0"
         )
 
     private fun shortRequest() =
@@ -133,6 +133,6 @@ class TradingBot( val tradeClient: SpotTradeClient) {
             symbol = "SOLBTC",
             side = OrderSide.SELL,
             type = OrderType.MARKET,
-            quantity = "5.0"
+            quantity = "10.0"
         )
 }
