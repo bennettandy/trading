@@ -5,12 +5,14 @@ import com.google.cloud.firestore.DocumentReference
 import com.google.cloud.firestore.DocumentSnapshot
 import com.google.cloud.firestore.WriteResult
 import com.google.firebase.cloud.FirestoreClient
+import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 import uk.co.avsoftware.trading.client.binance.response.OrderResponse
 import uk.co.avsoftware.trading.database.model.OrderResult
 import uk.co.avsoftware.trading.database.model.Person
 import uk.co.avsoftware.trading.database.model.Trade
 
+@Service
 class TradeService {
     companion object {
         const val COL_NAME = "trades"
