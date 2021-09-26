@@ -2,6 +2,8 @@ package uk.co.avsoftware.trading.bot
 
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
+import org.springframework.web.reactive.function.BodyInserters
+import org.springframework.web.reactive.function.BodyInserters.fromValue
 import org.springframework.web.reactive.function.server.ServerResponse
 import reactor.core.publisher.Mono
 import uk.co.avsoftware.trading.client.binance.SpotTradeClient
@@ -9,9 +11,14 @@ import uk.co.avsoftware.trading.client.binance.model.trade.OrderSide
 import uk.co.avsoftware.trading.client.binance.model.trade.OrderType
 import uk.co.avsoftware.trading.client.binance.request.NewOrderRequest
 import uk.co.avsoftware.trading.client.binance.response.OrderResponse
+import uk.co.avsoftware.trading.database.model.Configuration
+import uk.co.avsoftware.trading.database.model.ServiceError
+import uk.co.avsoftware.trading.database.model.TradingState
+import uk.co.avsoftware.trading.repository.TradeRepository
+import uk.co.avsoftware.trading.repository.service.ConfigurationService
 
 @Component
-class TradingBot( val tradeClient: SpotTradeClient) {
+class TradingBot( val tradeClient: SpotTradeClient, val tradeRepository: TradeRepository) {
 
     private val logger = KotlinLogging.logger {}
 
@@ -110,6 +117,19 @@ class TradingBot( val tradeClient: SpotTradeClient) {
     fun bearish(): Mono<ServerResponse> {
         logger.info("BEARISH")
         return ServerResponse.ok().build()
+    }
+
+    fun test(): Mono<ServerResponse> {
+
+        return tradeRepository.getConfiguration()
+            .doOnSubscribe { logger.info {"Starting TEST"} }
+            .doOnSuccess { logger.info { "Obtained Current Configuration $it" } }
+            .doOnError { logger.warn { "Failed to obtain current configuration ${it.message}" } }
+            .flatMap { configuration ->
+                ServerResponse.ok().body(fromValue(configuration))
+            }
+            .onErrorResume { ServerResponse.badRequest().body(fromValue(ServiceError.from(it))) }
+
     }
 
     private fun placeLong(): Mono<String> =

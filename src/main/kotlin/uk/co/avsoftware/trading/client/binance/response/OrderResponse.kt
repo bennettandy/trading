@@ -4,7 +4,6 @@ import uk.co.avsoftware.trading.client.binance.model.trade.OrderSide
 import uk.co.avsoftware.trading.client.binance.model.trade.OrderStatus
 import uk.co.avsoftware.trading.client.binance.model.trade.OrderType
 import uk.co.avsoftware.trading.client.binance.model.trade.TimeInForce
-import java.math.BigDecimal
 
 data class OrderResponse(
     // ACK
@@ -14,10 +13,10 @@ data class OrderResponse(
     val clientOrderId: String?,
     val transactTime: Long?,
     // RESULT
-    val price: BigDecimal?,
-    val origQty: BigDecimal?,
-    val executedQty: BigDecimal?,
-    val cumulativeQuoteQty: BigDecimal?,
+    val price: String?,
+    val origQty: String?,
+    val executedQty: String?,
+    val cumulativeQuoteQty: String?,
     val status: OrderStatus?,
     val timeInForce: TimeInForce?,
     val type: OrderType?,
@@ -27,8 +26,8 @@ data class OrderResponse(
 )
 
 data class OrderFill(
-    val price: BigDecimal,
-    val qty: BigDecimal,
-    val commission: BigDecimal,
+    val price: String,
+    val qty: String,
+    val commission: String,
     val commissionAsset: String
 )

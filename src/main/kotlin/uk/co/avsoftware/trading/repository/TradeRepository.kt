@@ -1,15 +1,19 @@
 package uk.co.avsoftware.trading.repository
 
-import org.springframework.stereotype.Component
+import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 import uk.co.avsoftware.trading.client.binance.request.NewOrderRequest
 import uk.co.avsoftware.trading.client.binance.response.OrderResponse
+import uk.co.avsoftware.trading.database.model.Configuration
 import uk.co.avsoftware.trading.database.model.Trade
 import uk.co.avsoftware.trading.database.model.TradeStatus
+import uk.co.avsoftware.trading.repository.service.ConfigurationService
 import uk.co.avsoftware.trading.repository.service.TradeService
 
-@Component
-class TradeRepository( val tradeService: TradeService) {
+@Service
+class TradeRepository( val tradeService: TradeService, val configurationService: ConfigurationService) {
+
+    fun getConfiguration(): Mono<Configuration> = configurationService.retrieveConfiguration()
 
     fun createTrade( newOrderRequest: NewOrderRequest ){
 

@@ -3,8 +3,7 @@ package uk.co.avsoftware.trading.web
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.MediaType
-import org.springframework.web.reactive.function.server.RequestPredicates.POST
-import org.springframework.web.reactive.function.server.RequestPredicates.accept
+import org.springframework.web.reactive.function.server.RequestPredicates.*
 import org.springframework.web.reactive.function.server.RouterFunction
 import org.springframework.web.reactive.function.server.RouterFunctions
 import org.springframework.web.reactive.function.server.ServerResponse
@@ -27,4 +26,8 @@ class MainRouter() {
                 .and(accept(MediaType.APPLICATION_JSON))) { tradingBot.bullish() }
             .andRoute(POST("/bot/bearish")
                 .and(accept(MediaType.APPLICATION_JSON))) { tradingBot.bearish() }
+
+                // fixme: comment
+            .andRoute(GET("/test")) { tradingBot.test() }
+
 }

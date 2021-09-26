@@ -1,9 +1,12 @@
 package uk.co.avsoftware.trading.database
 
 import com.google.auth.oauth2.GoogleCredentials
+import com.google.cloud.firestore.Firestore
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
+import com.google.firebase.cloud.FirestoreClient
 import mu.KotlinLogging
+import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Service
 import java.io.File
 import java.io.FileInputStream
@@ -33,4 +36,7 @@ class FirebaseInitialise {
             logger.error(e) { "Failed to initialise Firebase" }
         }
     }
+
+    @Bean
+    fun provideFirestore(): Firestore = FirestoreClient.getFirestore()
 }
