@@ -26,12 +26,9 @@ dependencies {
 	implementation("io.github.microutils:kotlin-logging-jvm:2.0.11")
 	implementation("com.google.firebase:firebase-admin:8.0.1")
 
-	implementation ("com.google.cloud:libraries-bom:22.0.0")
 	implementation("com.google.cloud:spring-cloud-gcp-starter-secretmanager:2.0.4")
 	implementation ("com.google.api-client:google-api-client:1.32.1")
 	implementation ("com.google.http-client:google-http-client:1.40.0")
-
-//	implementation ("com.google.api-client:google-api-client:1.32.1")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test:2.5.4")
 	testImplementation("io.projectreactor:reactor-test:3.4.10")

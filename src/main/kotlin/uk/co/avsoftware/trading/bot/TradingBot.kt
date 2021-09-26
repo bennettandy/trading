@@ -12,6 +12,7 @@ import uk.co.avsoftware.trading.client.binance.model.trade.OrderType
 import uk.co.avsoftware.trading.client.binance.request.NewOrderRequest
 import uk.co.avsoftware.trading.database.model.ServiceError
 import uk.co.avsoftware.trading.repository.ConfigurationRepository
+import java.util.*
 
 @Component
 class TradingBot(
@@ -136,7 +137,7 @@ class TradingBot(
             .doOnError { logger.warn { "Failed to obtain current configuration ${it.message}" } }
 
             .doOnSuccess { logger.info { "config $it"} }
-            .map { config -> config.copy(version = config.version.inc(), timestamp = System.currentTimeMillis()) }
+            .map { config -> config.copy(version = config.version.inc(), field = Date().toString()) }
 
             .doOnSuccess { logger.info { "updated $it"} }
             .flatMap { updatedConfig -> configurationRepository.updateConfiguration(updatedConfig) }

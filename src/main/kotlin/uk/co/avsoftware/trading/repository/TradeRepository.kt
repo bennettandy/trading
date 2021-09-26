@@ -13,8 +13,6 @@ import uk.co.avsoftware.trading.repository.service.TradeService
 @Service
 class TradeRepository( val tradeService: TradeService, val configurationService: ConfigurationService) {
 
-
-
     fun createTrade( newOrderRequest: NewOrderRequest ){
 
         //val trade: Trade = tradeFromNewOrderRequest( newOrderRequest )

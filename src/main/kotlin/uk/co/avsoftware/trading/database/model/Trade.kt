@@ -21,7 +21,7 @@ data class OrderResult(
     val status: String,
     val type: String,
     val side: String,
-    val fills: Array<Fill>,
+    val fills: List<Fill>,
     val profit: Profit
 )
 

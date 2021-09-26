@@ -15,6 +15,7 @@ class ConfigurationService( ) {
 
     companion object {
         private val logger = KotlinLogging.logger {}
+
         const val COL_NAME = "configuration"
     }
 
@@ -28,24 +29,25 @@ class ConfigurationService( ) {
     }
 
     fun retrieveConfiguration(): Mono<Configuration> {
-        val query: Query = dbFirestore.collection(COL_NAME).whereEqualTo("tradingState.symbol", "SOLBTC")
 
-        val future: ApiFuture<QuerySnapshot> = query.get()
+        val configCollection = dbFirestore.collection(COL_NAME)
+
+        configCollection.document("root").get()
+
+        val future: ApiFuture<DocumentSnapshot> = configCollection.document("root").get()
 
         return Mono.fromSupplier { future.get() }
             .doOnSuccess { logger.info { "Got configuration $it" } }
             .doOnError { logger.info { "Failed to get configuration ${it.message}" } }
-            .map { it.documents }
-            .map { it.first() }
             .map {  documentSnapshot -> documentSnapshot.toObject(Configuration::class.java) }
     }
 
     fun updateConfiguration(configuration: Configuration): Mono<String> {
-        val query: Query = dbFirestore.collection(COL_NAME).whereEqualTo("tradingState.symbol", "SOLBTC")
 
+        val configCollection = dbFirestore.collection(COL_NAME)
 
-        // fixme
-        val collectionsApiFuture: ApiFuture<WriteResult> = dbFirestore.collection(TradeService.COL_NAME).document().set(configuration);
+        val collectionsApiFuture: ApiFuture<WriteResult> = configCollection.document("root").set(configuration)
+
         return Mono.fromSupplier { collectionsApiFuture.get() }
             .map { result -> result.updateTime.toString() }
     }
