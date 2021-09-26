@@ -1,8 +1,8 @@
 package uk.co.avsoftware.trading.bot
 
 import mu.KotlinLogging
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
-import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.BodyInserters.fromValue
 import org.springframework.web.reactive.function.server.ServerResponse
 import reactor.core.publisher.Mono
@@ -10,27 +10,28 @@ import uk.co.avsoftware.trading.client.binance.SpotTradeClient
 import uk.co.avsoftware.trading.client.binance.model.trade.OrderSide
 import uk.co.avsoftware.trading.client.binance.model.trade.OrderType
 import uk.co.avsoftware.trading.client.binance.request.NewOrderRequest
-import uk.co.avsoftware.trading.client.binance.response.OrderResponse
-import uk.co.avsoftware.trading.database.model.Configuration
 import uk.co.avsoftware.trading.database.model.ServiceError
-import uk.co.avsoftware.trading.database.model.TradingState
-import uk.co.avsoftware.trading.repository.TradeRepository
-import uk.co.avsoftware.trading.repository.service.ConfigurationService
+import uk.co.avsoftware.trading.repository.ConfigurationRepository
 
 @Component
-class TradingBot( val tradeClient: SpotTradeClient, val tradeRepository: TradeRepository) {
+class TradingBot(
+    val tradeClient: SpotTradeClient,
+    val configurationRepository: ConfigurationRepository,
+) {
 
     private val logger = KotlinLogging.logger {}
 
     var isLong: Boolean = false
     var isShort: Boolean = false
 
+    @Value("\${sm://projects/1042444923718/secrets/binance-api-key}")
+    lateinit var key: String
 
     fun longTrigger(): Mono<ServerResponse> {
         logger.info("LONG TRIGGER : S $isShort, L $isLong")
 
         val closeShort: Mono<String> =
-            if (isShort){
+            if (isShort) {
                 // close any short
                 tradeClient.placeNewOrder(longRequest())
                     .doOnSuccess {
@@ -51,7 +52,9 @@ class TradingBot( val tradeClient: SpotTradeClient, val tradeRepository: TradeRe
                     logger.error("ERROR: $it")
                     ServerResponse.notFound().build()
                 }
-        } else { ServerResponse.notFound().build() }
+        } else {
+            ServerResponse.notFound().build()
+        }
         return result
     }
 
@@ -62,35 +65,41 @@ class TradingBot( val tradeClient: SpotTradeClient, val tradeRepository: TradeRe
                 .flatMap { ServerResponse.ok().build() }
                 .doOnSuccess { isLong = false }
                 .onErrorResume { ServerResponse.notFound().build() }
-        } else { ServerResponse.notFound().build() }
+        } else {
+            ServerResponse.notFound().build()
+        }
         return result
     }
 
     fun shortTrigger(): Mono<ServerResponse> {
-        logger.info("SHORT TRIGGER : S $isShort, L $isLong" )
+        logger.info("SHORT TRIGGER : S $isShort, L $isLong")
 
         val closeLong: Mono<String> =
-        if (isLong) {
-            // close any long
-            tradeClient.placeNewOrder(shortRequest())
-                .doOnSuccess {
-                    isLong = false
-                    logger.info("Close Long Success")
-                }
-        } else Mono.empty()
+            if (isLong) {
+                // close any long
+                tradeClient.placeNewOrder(shortRequest())
+                    .doOnSuccess {
+                        isLong = false
+                        logger.info("Close Long Success")
+                    }
+            } else Mono.empty()
 
         val result: Mono<ServerResponse> = if (!isShort) {
             // not short so place short to open position
             tradeClient.placeNewOrder(shortRequest())
                 .flatMap { closeLong } // close long if we have one
                 .flatMap { ServerResponse.ok().build() }
-                .doOnSuccess { isShort = true
+                .doOnSuccess {
+                    isShort = true
                     logger.info("Open Short Success")
                 }
                 .onErrorResume {
                     logger.error("ERROR", it)
-                    ServerResponse.notFound().build() }
-        } else { ServerResponse.notFound().build() }
+                    ServerResponse.notFound().build()
+                }
+        } else {
+            ServerResponse.notFound().build()
+        }
         return result
     }
 
@@ -104,7 +113,9 @@ class TradingBot( val tradeClient: SpotTradeClient, val tradeRepository: TradeRe
                 .doOnSuccess { isShort = false }
                 .onErrorResume { ServerResponse.notFound().build() }
 
-        } else { ServerResponse.notFound().build() }
+        } else {
+            ServerResponse.notFound().build()
+        }
 
         return result
     }
@@ -120,11 +131,16 @@ class TradingBot( val tradeClient: SpotTradeClient, val tradeRepository: TradeRe
     }
 
     fun test(): Mono<ServerResponse> {
-
-        return tradeRepository.getConfiguration()
-            .doOnSubscribe { logger.info {"Starting TEST"} }
+        return configurationRepository.getConfiguration()
             .doOnSuccess { logger.info { "Obtained Current Configuration $it" } }
             .doOnError { logger.warn { "Failed to obtain current configuration ${it.message}" } }
+
+            .doOnSuccess { logger.info { "config $it"} }
+            .map { config -> config.copy(version = config.version.inc(), timestamp = System.currentTimeMillis()) }
+
+            .doOnSuccess { logger.info { "updated $it"} }
+            .flatMap { updatedConfig -> configurationRepository.updateConfiguration(updatedConfig) }
+
             .flatMap { configuration ->
                 ServerResponse.ok().body(fromValue(configuration))
             }
@@ -133,8 +149,8 @@ class TradingBot( val tradeClient: SpotTradeClient, val tradeRepository: TradeRe
     }
 
     private fun placeLong(): Mono<String> =
-            tradeClient.placeNewOrder(longRequest())
-                .doOnSuccess { isLong = true }
+        tradeClient.placeNewOrder(longRequest())
+            .doOnSuccess { isLong = true }
 
     private fun placeShort(): Mono<String> =
         tradeClient.placeNewOrder(shortRequest())

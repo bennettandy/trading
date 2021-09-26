@@ -8,6 +8,6 @@ data class TradingState(
     val longPosition: String = ZERO.toPlainString(),
     val shortPosition: String = ZERO.toPlainString()
 ){
-    fun isShort(): Boolean = BigDecimal(shortPosition).compareTo(ZERO) == 0
-    fun isLong(): Boolean = BigDecimal(longPosition).compareTo(ZERO) == 0
+    //fun isShort(): Boolean = BigDecimal(shortPosition).compareTo(ZERO) == 0
+    //fun isLong(): Boolean = BigDecimal(longPosition).compareTo(ZERO) == 0
 }

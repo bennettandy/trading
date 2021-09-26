@@ -1,26 +1,40 @@
-# logging
-logging:
-  level:
-    root: WARN
-    uk.co.avsoftware: DEBUG
-
 spring:
   profiles:
     active: "local"
-
----
-spring:
-  profiles: production
   cloud:
     gcp:
       secretmanager:
-        enabled: false
-        project-id:
+        enabled: true
+      project-id: trading-326621
+      credentials:
+        location: file://serviceaccount.json
+
+# logging
+logging:
+  level:
+    root: INFO
+    com.google: INFO
+    uk.co.avsoftware: DEBUG
 
 ---
 spring:
-  profiles: local
+  config:
+    activate:
+      on:
+        profile: production
   cloud:
     gcp:
       secretmanager:
-        enabled: false
+        enabled: true
+
+---
+
+spring:
+  config:
+    activate:
+      on:
+        profile: local
+  cloud:
+    gcp:
+      secretmanager:
+        enabled: true

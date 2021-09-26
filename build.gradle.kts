@@ -17,7 +17,6 @@ repositories {
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive:2.5.4")
-	implementation("com.google.cloud:spring-cloud-gcp-dependencies:2.0.4")
 	implementation("org.springframework.boot:spring-boot-starter-webflux:2.5.4")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.12.5")
 	implementation("io.projectreactor.kotlin:reactor-kotlin-extensions:1.1.4")
@@ -25,8 +24,15 @@ dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.5.2-native-mt")
 	implementation("io.github.microutils:kotlin-logging-jvm:2.0.11")
-	implementation("com.google.firebase:firebase-admin:6.11.0")
-//	implementation ("com.google.cloud:spring-cloud-gcp-starter-secretmanager:2.0.4")
+	implementation("com.google.firebase:firebase-admin:8.0.1")
+
+	implementation ("com.google.cloud:libraries-bom:22.0.0")
+	implementation("com.google.cloud:spring-cloud-gcp-starter-secretmanager:2.0.4")
+	implementation ("com.google.api-client:google-api-client:1.32.1")
+	implementation ("com.google.http-client:google-http-client:1.40.0")
+
+//	implementation ("com.google.api-client:google-api-client:1.32.1")
+
 	testImplementation("org.springframework.boot:spring-boot-starter-test:2.5.4")
 	testImplementation("io.projectreactor:reactor-test:3.4.10")
 	testImplementation("io.mockk:mockk:1.12.0")

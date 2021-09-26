@@ -7,10 +7,11 @@ import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 import uk.co.avsoftware.trading.database.model.Configuration
-import uk.co.avsoftware.trading.database.model.Person
 
 @Service
-class ConfigurationService(val firestore: Firestore) {
+class ConfigurationService( ) {
+
+    val dbFirestore by lazy { FirestoreClient.getFirestore()}
 
     companion object {
         private val logger = KotlinLogging.logger {}
@@ -18,8 +19,6 @@ class ConfigurationService(val firestore: Firestore) {
     }
 
     fun saveConfiguration(configuration: Configuration): Mono<String> {
-        val dbFirestore = FirestoreClient.getFirestore()
-
         val collectionsApiFuture: ApiFuture<WriteResult> = dbFirestore.collection(COL_NAME)
             .document()
             .set(configuration)
@@ -29,7 +28,7 @@ class ConfigurationService(val firestore: Firestore) {
     }
 
     fun retrieveConfiguration(): Mono<Configuration> {
-        val query: Query = firestore.collection(COL_NAME).whereEqualTo("tradingState.symbol", "SOLBTC")
+        val query: Query = dbFirestore.collection(COL_NAME).whereEqualTo("tradingState.symbol", "SOLBTC")
 
         val future: ApiFuture<QuerySnapshot> = query.get()
 
@@ -41,9 +40,12 @@ class ConfigurationService(val firestore: Firestore) {
             .map {  documentSnapshot -> documentSnapshot.toObject(Configuration::class.java) }
     }
 
-    fun updatePersonDetails(person: Person): Mono<String> {
-        val dbFirestore = FirestoreClient.getFirestore()
-        val collectionsApiFuture: ApiFuture<WriteResult> = dbFirestore.collection(COL_NAME).document(person.name).set(person);
+    fun updateConfiguration(configuration: Configuration): Mono<String> {
+        val query: Query = dbFirestore.collection(COL_NAME).whereEqualTo("tradingState.symbol", "SOLBTC")
+
+
+        // fixme
+        val collectionsApiFuture: ApiFuture<WriteResult> = dbFirestore.collection(TradeService.COL_NAME).document().set(configuration);
         return Mono.fromSupplier { collectionsApiFuture.get() }
             .map { result -> result.updateTime.toString() }
     }

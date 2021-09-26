@@ -22,7 +22,7 @@ data class OrderResponse(
     val type: OrderType?,
     val side: OrderSide?,
     // FULL
-    val fills: Array<OrderFill>?
+    val fills: List<OrderFill>?
 )
 
 data class OrderFill(

@@ -1,9 +1,3 @@
-# logging
-logging:
-  level:
-    root: WARN
-    uk.co.avsoftware: DEBUG
-
 spring:
   application:
     name: "trading"
@@ -14,16 +8,8 @@ api:
   binance:
     description: "binance exchange api credentials"
     uri: "https://api.binance.com"
-    key: "knBuGTfdsAbTIm0hSXB9AKSLhkKPF98Rb4Fn8yTsXVtr76pSfoB0hpUjVt98JNOe"
-    secret: "9C81M7RWIRNWr2vLrMEnY9Tu0xmFpRCwPbq0ixDcz5JcYD6hkDJCWcyNMw1KH2oG"
-
----
-spring:
-  profiles: production
-
----
-spring:
-  profiles: local
+    key: "${sm://binance-api-key}"
+    secret: "${sm://binance-api-secret}"
 
 
 

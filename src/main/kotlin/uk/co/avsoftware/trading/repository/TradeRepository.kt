@@ -13,7 +13,7 @@ import uk.co.avsoftware.trading.repository.service.TradeService
 @Service
 class TradeRepository( val tradeService: TradeService, val configurationService: ConfigurationService) {
 
-    fun getConfiguration(): Mono<Configuration> = configurationService.retrieveConfiguration()
+
 
     fun createTrade( newOrderRequest: NewOrderRequest ){
 
@@ -31,7 +31,6 @@ class TradeRepository( val tradeService: TradeService, val configurationService:
     fun saveOrderResponse(orderResponse: OrderResponse?): Mono<String> =
         orderResponse?.let { tradeService.saveOrderResponse(it) }
             ?: Mono.empty()
-
 
     companion object {
 

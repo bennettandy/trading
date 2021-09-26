@@ -39,4 +39,4 @@ local.properties
 gradle/wrapper/gradle-wrapper.jar
 gradle/wrapper/gradle-wrapper.properties
 /credentials.txt
-serviceaccount.json
+src/main/resources/serviceaccount.json
