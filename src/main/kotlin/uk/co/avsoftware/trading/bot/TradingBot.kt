@@ -82,6 +82,7 @@ class TradingBot(
 
     fun test(): Mono<ServerResponse> {
         return configurationRepository.getConfiguration()
+
             .doOnSuccess { logger.info { "Obtained Current Configuration $it" } }
             .doOnError { logger.warn { "Failed to obtain current configuration ${it.message}" } }
 
@@ -90,6 +91,10 @@ class TradingBot(
 
             .doOnSuccess { logger.info { "updated $it"} }
             .flatMap { updatedConfig -> configurationRepository.updateConfiguration(updatedConfig) }
+
+//            .flatMap { stateRepository.getState().flatMap {
+//                state -> stateRepository.updateState(state.copy(isLong = !state.isLong, isShort = !state.isShort))
+//            } }
 
             .flatMap { configuration ->
                 ServerResponse.ok().body(fromValue(configuration))
