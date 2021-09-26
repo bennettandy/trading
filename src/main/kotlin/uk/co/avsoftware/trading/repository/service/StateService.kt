@@ -1,34 +1,26 @@
 package uk.co.avsoftware.trading.repository.service
 
 import com.google.api.core.ApiFuture
-import com.google.cloud.firestore.*
+import com.google.cloud.firestore.DocumentSnapshot
+import com.google.cloud.firestore.WriteResult
 import com.google.firebase.cloud.FirestoreClient
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
-import uk.co.avsoftware.trading.database.model.Configuration
+import uk.co.avsoftware.trading.database.model.State
 
 @Service
-class ConfigurationService( ) {
+class StateService {
 
-    val dbFirestore by lazy { FirestoreClient.getFirestore()}
+    private val dbFirestore by lazy { FirestoreClient.getFirestore()}
 
     companion object {
         private val logger = KotlinLogging.logger {}
 
-        const val COL_NAME = "configuration"
+        const val COL_NAME = "state"
     }
 
-    fun saveConfiguration(configuration: Configuration): Mono<String> {
-        val collectionsApiFuture: ApiFuture<WriteResult> = dbFirestore.collection(COL_NAME)
-            .document()
-            .set(configuration)
-
-        return Mono.fromSupplier { collectionsApiFuture.get() }
-            .map { result -> result.updateTime.toString()}
-    }
-
-    fun retrieveConfiguration(): Mono<Configuration> {
+    fun retrieveState(): Mono<State> {
 
         val configCollection = dbFirestore.collection(COL_NAME)
 
@@ -39,14 +31,14 @@ class ConfigurationService( ) {
         return Mono.fromSupplier { future.get() }
             .doOnSuccess { logger.info { "Got configuration $it" } }
             .doOnError { logger.info { "Failed to get configuration ${it.message}" } }
-            .map {  documentSnapshot -> documentSnapshot.toObject(Configuration::class.java) }
+            .map {  documentSnapshot -> documentSnapshot.toObject(State::class.java) }
     }
 
-    fun updateConfiguration(configuration: Configuration): Mono<String> {
+    fun updateState(state: State): Mono<String> {
 
         val configCollection = dbFirestore.collection(COL_NAME)
 
-        val collectionsApiFuture: ApiFuture<WriteResult> = configCollection.document("root").set(configuration)
+        val collectionsApiFuture: ApiFuture<WriteResult> = configCollection.document("root").set(state)
 
         return Mono.fromSupplier { collectionsApiFuture.get() }
             .map { result -> result.updateTime.toString() }

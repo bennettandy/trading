@@ -9,6 +9,7 @@ import uk.co.avsoftware.trading.repository.service.ConfigurationService
 class ConfigurationRepository(val configurationService: ConfigurationService) {
 
     fun getConfiguration(): Mono<Configuration> = configurationService.retrieveConfiguration()
+
     fun updateConfiguration(updatedConfig: Configuration?): Mono<Configuration> {
         return updatedConfig?.let {
             configurationService.updateConfiguration(it).map { updatedConfig }
