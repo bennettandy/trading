@@ -1,9 +1,7 @@
 package uk.co.avsoftware.trading.bot
 
 import mu.KotlinLogging
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
-import org.springframework.web.reactive.function.BodyInserters.fromValue
 import org.springframework.web.reactive.function.server.ServerResponse
 import reactor.core.publisher.Mono
 import uk.co.avsoftware.trading.client.binance.SpotTradeClient
@@ -13,9 +11,7 @@ import uk.co.avsoftware.trading.client.binance.request.NewOrderRequest
 import uk.co.avsoftware.trading.client.binance.response.OrderFill
 import uk.co.avsoftware.trading.client.binance.response.OrderResponse
 import uk.co.avsoftware.trading.database.model.Position
-import uk.co.avsoftware.trading.database.model.ServiceError
 import uk.co.avsoftware.trading.database.model.State
-import uk.co.avsoftware.trading.profit.ProfitCalculator
 import uk.co.avsoftware.trading.repository.PositionRepository
 import uk.co.avsoftware.trading.repository.StateRepository
 import uk.co.avsoftware.trading.repository.TradeRepository
@@ -88,61 +84,14 @@ class TradingBot(
 
     fun test(): Mono<ServerResponse> {
         return ServerResponse.ok().build()
-//        return positionRepository.getPosition()
-//
-//            // update position
-//            .flatMap { positionRepository.addCloseOrder( orderResponse =  testOrderResponse()) }
-//
-//            .flatMap { position ->
-//                ServerResponse.ok().body(fromValue(position))
-//            }
-//            .onErrorResume { ServerResponse.badRequest().body(fromValue(ServiceError.from(it))) }
     }
 
     fun testOpen(): Mono<ServerResponse> {
         return ServerResponse.ok().build()
-//        tradeRepository.ope
-//
-//        // have we got a current open position?
-//        return stateRepository.getState("SOLBTC")
-//            .flatMap { state ->  }
-//
-//        return tradeRepository.
-//
-//        positionRepository.getPosition()
-//            // update position
-//            // update position
-//            .flatMap { positionRepository.addOpenOrder( orderResponse =  testOrderResponse()) }
-//
-//            .flatMap { position ->
-//                ServerResponse.ok().body(fromValue(position))
-//            }
-//            .onErrorResume { ServerResponse.badRequest().body(fromValue(ServiceError.from(it))) }
     }
 
     fun testClose(): Mono<ServerResponse> {
         return ServerResponse.ok().build()
-//        return positionRepository.getPosition()
-//
-//            // update position
-//            .map { it.copy(
-//                open_quantity = emptyList(),
-//                open_price = emptyList(),
-//                open_commission = emptyList(),
-//                close_quantity = emptyList(),
-//                close_price = emptyList(),
-//                close_commission = emptyList(),
-//            ) }
-//            // update position
-//
-//            .map { ProfitCalculator.calculateProfits(it) }
-//
-//            .flatMap { positionRepository.updatePosition(it) }
-//
-//            .flatMap { position ->
-//                ServerResponse.ok().body(fromValue(position))
-//            }
-//            .onErrorResume { ServerResponse.badRequest().body(fromValue(ServiceError.from(it))) }
     }
 
     private fun closeExistingShort(state: State): Mono<State> {
