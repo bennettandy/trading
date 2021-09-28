@@ -28,6 +28,9 @@ class MainRouter() {
                 .and(accept(MediaType.APPLICATION_JSON))) { tradingBot.bearish() }
 
                 // fixme: comment
+            .andRoute(GET("/test/reset")) { tradingBot.reset() }
+            .andRoute(GET("/test/clear")) { tradingBot.clear() }
             .andRoute(GET("/test")) { tradingBot.test() }
+
 
 }
