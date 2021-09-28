@@ -19,7 +19,7 @@ class SpotTradeClient(@Qualifier("binanceApiClient") val webClient: WebClient, v
 
     private val logger = KotlinLogging.logger {}
 
-    fun placeNewOrder(newOrderRequest: NewOrderRequest): Mono<String> =
+    fun placeNewOrder(newOrderRequest: NewOrderRequest): Mono<OrderResponse> =
         with (binanceSigner){
             val queryString = signQueryString(newOrderRequest.getQueryString())
             println("PLACE ORDER $queryString")
@@ -33,7 +33,7 @@ class SpotTradeClient(@Qualifier("binanceApiClient") val webClient: WebClient, v
                 )
                 .onStatus({ it.is5xxServerError }, { Mono.error( RuntimeException("Server is not responding"))})
                 .bodyToMono(OrderResponse::class.java)
-                .flatMap { tradeRepository.saveOrderResponse(it) }
+
                 .doOnSuccess{ logger.info("Saved Result: $it")}
 
         }

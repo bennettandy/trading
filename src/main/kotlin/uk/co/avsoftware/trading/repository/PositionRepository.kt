@@ -9,7 +9,9 @@ import uk.co.avsoftware.trading.repository.service.PositionService
 @Service
 class PositionRepository(val positionService: PositionService) {
 
-    fun getPosition(symbol: String = "SOLBTC"): Mono<Position> = positionService.retrieveOpenPosition(symbol = symbol)
+    fun getPosition(documentId: String): Mono<Position> = positionService.retrievePosition(documentId = documentId)
+
+    fun createPosition( position: Position): Mono<String> = positionService.createNewPosition(position = position)
 
     fun updatePosition(position: Position?): Mono<Position> {
         return position?.let {
@@ -17,14 +19,14 @@ class PositionRepository(val positionService: PositionService) {
         } ?: Mono.empty()
     }
 
-    fun addOpenOrder(symbol: String = "SOLBTC", orderResponse: OrderResponse): Mono<Position> {
-        return getPosition(symbol)
+    fun addOpenOrder(documentId: String, orderResponse: OrderResponse): Mono<Position> {
+        return getPosition(documentId)
             .map { addOpenOrderToPosition(it, orderResponse) }
             .flatMap { updatePosition(it) }
     }
 
-    fun addCloseOrder(symbol: String = "SOLBTC", orderResponse: OrderResponse): Mono<Position> {
-        return getPosition(symbol)
+    fun addCloseOrder(documentId: String, orderResponse: OrderResponse): Mono<Position> {
+        return getPosition(documentId)
             .map { addCloseOrderToPosition(it, orderResponse) }
             .flatMap { updatePosition(it) }
             .map { calculateProfits(it) }
@@ -37,7 +39,6 @@ class PositionRepository(val positionService: PositionService) {
                 open_quantity = fills?.map { orderFill -> orderFill.qty  } ?: emptyList()
                 open_price = fills?.map { orderFill -> orderFill.price  } ?: emptyList()
             }
-            status = "OPEN"
         }
     }
 
@@ -48,7 +49,6 @@ class PositionRepository(val positionService: PositionService) {
                 close_quantity = fills?.map { orderFill -> orderFill.qty  } ?: emptyList()
                 close_price = fills?.map { orderFill -> orderFill.price } ?: emptyList()
             }
-            status = "CLOSED"
         }
     }
 
