@@ -10,12 +10,12 @@ import uk.co.avsoftware.trading.client.binance.SpotTradeClient
 import uk.co.avsoftware.trading.client.binance.model.trade.OrderSide
 import uk.co.avsoftware.trading.client.binance.model.trade.OrderType
 import uk.co.avsoftware.trading.client.binance.request.NewOrderRequest
+import uk.co.avsoftware.trading.client.binance.response.OrderFill
+import uk.co.avsoftware.trading.client.binance.response.OrderResponse
 import uk.co.avsoftware.trading.database.model.ServiceError
 import uk.co.avsoftware.trading.database.model.State
-import uk.co.avsoftware.trading.repository.ConfigurationRepository
 import uk.co.avsoftware.trading.repository.PositionRepository
 import uk.co.avsoftware.trading.repository.StateRepository
-import java.util.*
 
 @Component
 class TradingBot(
@@ -89,15 +89,7 @@ class TradingBot(
         return positionRepository.getPosition()
 
             // update position
-            .map { position ->
-                position.copy(
-                    direction = "SELL",
-                    open_commission = position.open_commission.plus("22"),
-                    open_price = position.open_price.plus("1.020"),
-                    open_quantity = position.open_quantity.plus("22")
-                )
-            }
-            .flatMap { positionRepository.updatePosition(it) }
+            .flatMap { positionRepository.addCloseOrder( orderResponse =  testOrderResponse()) }
 
             .flatMap { position ->
                 ServerResponse.ok().body(fromValue(position))
@@ -109,19 +101,30 @@ class TradingBot(
         return positionRepository.getPosition()
 
             // update position
-            .map { position ->
-                position.copy(
-                    direction = "SELL",
-                    status = "CLOSED",
-                    open_commission = emptyList(),
-                    open_price = emptyList(),
-                    open_quantity = emptyList(),
-                    close_commission = emptyList(),
-                    close_price = emptyList(),
-                    close_quantity = emptyList()
-                )
+            // update position
+            .flatMap { positionRepository.addOpenOrder( orderResponse =  testOrderResponse()) }
+
+            .flatMap { position ->
+                ServerResponse.ok().body(fromValue(position))
             }
-            .flatMap { positionRepository.updatePosition(it) }
+            .onErrorResume { ServerResponse.badRequest().body(fromValue(ServiceError.from(it))) }
+    }
+
+    fun clear(): Mono<ServerResponse> {
+        return positionRepository.getPosition()
+
+            // update position
+            .map { it.copy(
+                open_quantity = emptyList(),
+                open_price = emptyList(),
+                open_commission = emptyList(),
+                close_quantity = emptyList(),
+                close_price = emptyList(),
+                close_commission = emptyList(),
+                status = "CLOSED"
+            ) }
+            // update position
+            .flatMap { positionRepository.updatePosition( it) }
 
             .flatMap { position ->
                 ServerResponse.ok().body(fromValue(position))
@@ -148,15 +151,21 @@ class TradingBot(
     }
 
     private fun placeLong(state: State): Mono<State> {
-        return tradeClient.placeNewOrder(longRequest())
-            .doOnSuccess { logger.info("Open Long Success") }
-            .flatMap { stateRepository.updateState(state.copy(isLong = true)) }
+        if (!state.isLong) {
+            return tradeClient.placeNewOrder(longRequest())
+                .doOnSuccess { logger.info("Open Long Success") }
+                .flatMap { stateRepository.updateState(state.copy(isLong = true)) }
+        }
+        else return Mono.just(state)
     }
 
     private fun placeShort(state: State): Mono<State> {
-        return tradeClient.placeNewOrder(shortRequest())
-            .doOnSuccess { logger.info("Open Short Success") }
-            .flatMap { stateRepository.updateState(state.copy(isShort = true)) }
+        if (!state.isShort) {
+            return tradeClient.placeNewOrder(shortRequest())
+                .doOnSuccess { logger.info("Open Short Success") }
+                .flatMap { stateRepository.updateState(state.copy(isShort = true)) }
+        }
+        else return Mono.just(state)
     }
 
     private fun longRequest() =
@@ -176,6 +185,20 @@ class TradingBot(
         )
 
     companion object {
-        const val TRADE_AMOUNT = "42.0"
+        const val TRADE_AMOUNT = "30.0"
+    }
+
+    private fun testOrderResponse(): OrderResponse {
+        return OrderResponse(
+            fills = listOf(
+                OrderFill(
+                    price = 10.0,
+                    qty = 20.0,
+                    commission = 0.0023,
+                    commissionAsset = "BTC"
+                )
+            ),
+            symbol = "SOLBTC"
+        )
     }
 }

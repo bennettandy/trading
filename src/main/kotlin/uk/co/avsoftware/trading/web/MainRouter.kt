@@ -29,6 +29,7 @@ class MainRouter() {
 
                 // fixme: comment
             .andRoute(GET("/test/reset")) { tradingBot.reset() }
+            .andRoute(GET("/test/clear")) { tradingBot.clear() }
             .andRoute(GET("/test")) { tradingBot.test() }
 
 
