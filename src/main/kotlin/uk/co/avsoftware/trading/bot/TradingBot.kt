@@ -25,18 +25,15 @@ class TradingBot(
 
     private val logger = KotlinLogging.logger {}
 
-    fun longTrigger(): Mono<ServerResponse> =
+    fun longTrigger(): Mono<State> =
         stateRepository.getState(SYMBOL)
             .doOnSuccess { logger.info("LONG TRIGGER : S ${it.short_position}, L ${it.long_position}") }
             .flatMap { state: State ->
                 closeExistingShort(state)
                     .flatMap { newState -> placeLong(newState) }
             }
-            .flatMap { ServerResponse.ok().build() }
-            .onErrorResume {
-                logger.error("ERROR: $it")
-                ServerResponse.notFound().build()
-            }
+
+
 
     fun shortTrigger(): Mono<ServerResponse> =
         stateRepository.getState(SYMBOL)
