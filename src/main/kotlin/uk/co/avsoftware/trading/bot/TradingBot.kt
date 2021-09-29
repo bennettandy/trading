@@ -4,11 +4,10 @@ import mu.KotlinLogging
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.ServerResponse
 import reactor.core.publisher.Mono
-import uk.co.avsoftware.trading.client.binance.SpotTradeClient
+import uk.co.avsoftware.trading.client.binance.TradeClient
 import uk.co.avsoftware.trading.client.binance.model.trade.OrderSide
 import uk.co.avsoftware.trading.client.binance.model.trade.OrderType
 import uk.co.avsoftware.trading.client.binance.request.NewOrderRequest
-import uk.co.avsoftware.trading.client.binance.response.OrderFill
 import uk.co.avsoftware.trading.client.binance.response.OrderResponse
 import uk.co.avsoftware.trading.database.model.Position
 import uk.co.avsoftware.trading.database.model.State
@@ -18,7 +17,7 @@ import uk.co.avsoftware.trading.repository.TradeRepository
 
 @Component
 class TradingBot(
-    val tradeClient: SpotTradeClient,
+    val tradeClient: TradeClient,
     val positionRepository: PositionRepository,
     val stateRepository: StateRepository,
     val tradeRepository: TradeRepository
@@ -99,6 +98,7 @@ class TradingBot(
         return when (shortPositionId != null) {
             // we have an existing short position, so place new Long Order
             true -> tradeClient.placeNewOrder(longRequest())
+                .doOnSuccess { logger.info { "order response $it" } }
                     // save Long order response to db
                 .flatMap { orderResponse -> tradeRepository.saveOrderResponse(orderResponse).map { orderResponse } }
                 .flatMap { orderResponse: OrderResponse ->
@@ -197,17 +197,4 @@ class TradingBot(
         const val SYMBOL = "SOLBTC"
     }
 
-    private fun testOrderResponse(): OrderResponse {
-        return OrderResponse(
-            fills = listOf(
-                OrderFill(
-                    price = 10.0,
-                    qty = 20.0,
-                    commission = 0.0023,
-                    commissionAsset = "BTC"
-                )
-            ),
-            symbol = "SOLBTC"
-        )
-    }
 }
