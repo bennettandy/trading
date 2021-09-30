@@ -5,7 +5,7 @@ import uk.co.avsoftware.trading.client.binance.response.OrderFill
 import uk.co.avsoftware.trading.client.binance.response.OrderResponse
 
 object TestDataHelper {
-    fun createOrderResponse(orderSide: OrderSide): OrderResponse {
+    fun createOrderResponse(orderSide: OrderSide, clientOrderId: String): OrderResponse {
         return OrderResponse(
             fills = listOf(
                 OrderFill(
@@ -16,7 +16,10 @@ object TestDataHelper {
                 )
             ),
             symbol = "SOLBTC",
-            side = orderSide
+            side = orderSide,
+            clientOrderId = clientOrderId,
+            orderId = (5000L..10000L).random(),
+            transactTime = System.currentTimeMillis()
         )
     }
 }

@@ -18,11 +18,11 @@ class MainRouter() {
         RouterFunctions.route(POST("/bot/long")
                 .and(accept(MediaType.APPLICATION_JSON))) { botHandler.longTrigger() }
             .andRoute(POST("/bot/short")
-                .and(accept(MediaType.APPLICATION_JSON))) { tradingBot.shortTrigger() }
+                .and(accept(MediaType.APPLICATION_JSON))) { botHandler.shortTrigger() }
             .andRoute(POST("/bot/short/tp")
-                .and(accept(MediaType.APPLICATION_JSON))) { tradingBot.shortTakeProfit() }
+                .and(accept(MediaType.APPLICATION_JSON))) { botHandler.shortTakeProfit() }
             .andRoute(POST("/bot/long/tp")
-                .and(accept(MediaType.APPLICATION_JSON))) { tradingBot.longTakeProfit() }
+                .and(accept(MediaType.APPLICATION_JSON))) { botHandler.longTakeProfit() }
             .andRoute(POST("/bot/bullish")
                 .and(accept(MediaType.APPLICATION_JSON))) { tradingBot.bullish() }
             .andRoute(POST("/bot/bearish")

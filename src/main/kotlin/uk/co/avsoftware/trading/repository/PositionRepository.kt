@@ -28,8 +28,9 @@ class PositionRepository(val positionService: PositionService) {
     fun addCloseOrder(documentId: String, orderResponse: OrderResponse): Mono<Position> {
         return getPosition(documentId)
             .map { addCloseOrderToPosition(it, orderResponse) }
-            .flatMap { updatePosition(it) }
             .map { calculateProfits(it) }
+            .flatMap { updatePosition(it) }
+
     }
 
     fun addOpenOrderToPosition(position: Position, orderResponse: OrderResponse): Position{
@@ -39,6 +40,9 @@ class PositionRepository(val positionService: PositionService) {
                 open_quantity = fills?.map { orderFill -> orderFill.qty  } ?: emptyList()
                 open_price = fills?.map { orderFill -> orderFill.price  } ?: emptyList()
                 direction = orderResponse.side?.name ?: "missing"
+                open_commission_currency = fills?.first()?.commissionAsset ?: "unknown"
+                open_order_id = orderResponse.orderId.toString()
+                open_time_stamp = orderResponse.transactTime ?: -1
             }
         }
     }
@@ -49,11 +53,22 @@ class PositionRepository(val positionService: PositionService) {
                 close_commission = fills?.map { orderFill -> orderFill.commission  } ?: emptyList()
                 close_quantity = fills?.map { orderFill -> orderFill.qty  } ?: emptyList()
                 close_price = fills?.map { orderFill -> orderFill.price } ?: emptyList()
+                direction = orderResponse.side?.name ?: "missing"
+                close_commission_currency = fills?.first()?.commissionAsset ?: "unknown"
+                close_order_id = orderResponse.orderId.toString()
+                close_time_stamp = orderResponse.transactTime ?: -1
             }
         }
     }
 
     private fun calculateProfits(position: Position): Position {
-        return position
+        return position.apply {
+            open_qty = position.open_quantity.sum()
+            open_cost = position.open_quantity.mapIndexed { index, d -> d*position.open_price[index]  }.sum()
+            open_comm = position.open_commission.sum()
+            close_qty = position.close_quantity.sum()
+            close_cost = position.close_quantity.mapIndexed { index, d -> d*position.close_price[index]  }.sum()
+            close_comm = position.close_commission.sum()
+        }
     }
 }

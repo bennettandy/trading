@@ -16,4 +16,25 @@ class BotHandler( val tradingBot: TradingBot ) {
             logger.error("ERROR: $it")
             ServerResponse.notFound().build()
         }
+
+    fun shortTrigger(): Mono<ServerResponse> = tradingBot.shortTrigger()
+        .flatMap { ServerResponse.ok().build() }
+        .onErrorResume {
+            logger.error("ERROR: $it")
+            ServerResponse.notFound().build()
+        }
+
+    fun shortTakeProfit(): Mono<ServerResponse> = tradingBot.shortTakeProfit()
+        .flatMap { ServerResponse.ok().build() }
+        .onErrorResume {
+            logger.error("ERROR: $it")
+            ServerResponse.notFound().build()
+        }
+
+    fun longTakeProfit(): Mono<ServerResponse> = tradingBot.longTakeProfit()
+        .flatMap { ServerResponse.ok().build() }
+        .onErrorResume {
+            logger.error("ERROR: $it")
+            ServerResponse.notFound().build()
+        }
 }
