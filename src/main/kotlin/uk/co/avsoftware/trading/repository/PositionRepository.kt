@@ -32,7 +32,7 @@ class PositionRepository(val positionService: PositionService) {
             .map { calculateProfits(it) }
     }
 
-    private fun addOpenOrderToPosition(position: Position, orderResponse: OrderResponse): Position{
+    fun addOpenOrderToPosition(position: Position, orderResponse: OrderResponse): Position{
         return position.apply {
             with (orderResponse){
                 open_commission = fills?.map { orderFill -> orderFill.commission  } ?: emptyList()
@@ -42,7 +42,7 @@ class PositionRepository(val positionService: PositionService) {
         }
     }
 
-    private fun addCloseOrderToPosition(position: Position, orderResponse: OrderResponse): Position{
+    fun addCloseOrderToPosition(position: Position, orderResponse: OrderResponse): Position{
         return position.apply {
             with (orderResponse){
                 close_commission = fills?.map { orderFill -> orderFill.commission  } ?: emptyList()
