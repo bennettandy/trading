@@ -38,6 +38,7 @@ class PositionRepository(val positionService: PositionService) {
                 open_commission = fills?.map { orderFill -> orderFill.commission  } ?: emptyList()
                 open_quantity = fills?.map { orderFill -> orderFill.qty  } ?: emptyList()
                 open_price = fills?.map { orderFill -> orderFill.price  } ?: emptyList()
+                direction = orderResponse.side?.name ?: "missing"
             }
         }
     }
