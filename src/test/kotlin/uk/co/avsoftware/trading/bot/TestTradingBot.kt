@@ -2,6 +2,7 @@ package uk.co.avsoftware.trading.bot
 
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import junit.framework.Assert.assertEquals
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
@@ -26,16 +27,17 @@ class TestTradingBot {
     val tradeClient: TradeClient = mockk()
 
     @Test
-    fun testTradingBotLongTrigger(){
+    fun testTradingBotLongTriggerWithOpenShortPosition(){
 
-        val buyOrderResponse: OrderResponse = TestDataHelper.createOrderResponse(OrderSide.BUY)
+        val buyOrderResponseA: OrderResponse = TestDataHelper.createOrderResponse(OrderSide.BUY)
+        val buyOrderResponseB: OrderResponse = TestDataHelper.createOrderResponse(OrderSide.BUY)
 
         val initialShortState = State (
             exchange = "binance",
             symbol = "SOLBTC",
             long_position = null,
             short_position = "short_pos_123"
-                )
+        )
 
         val intermediateIdleState = State (
             exchange = "binance",
@@ -63,13 +65,13 @@ class TestTradingBot {
             symbol = "SOLBTC",
         )
 
-        every { tradeClient.placeNewOrder(any())} returns Mono.just(buyOrderResponse)
+        every { tradeClient.placeNewOrder(any())} returns Mono.just(buyOrderResponseA) andThen Mono.just(buyOrderResponseB)
         every { stateRepository.getState("SOLBTC") } returns Mono.just(initialShortState)
-        every { tradeRepository.saveOrderResponse(buyOrderResponse)} returns Mono.just("document-id")
-        every { positionRepository.addCloseOrder( documentId = "short_pos_123", orderResponse = buyOrderResponse) } returns Mono.just(position)
+        every { tradeRepository.saveOrderResponse(buyOrderResponseA)} returns Mono.just("document-id")
+        every { positionRepository.addCloseOrder( documentId = "short_pos_123", orderResponse = buyOrderResponseA) } returns Mono.just(position)
         every { stateRepository.updateState(State(exchange = "binance", symbol="SOLBTC", long_position=null, short_position=null)) } returns Mono.just(intermediateIdleState)
         every { positionRepository.createPosition(Position(exchange = "binance", symbol = "SOLBTC")) } returns Mono.just("new-position-doc-id")
-        every { positionRepository.addOpenOrder( documentId = "new-position-doc-id", orderResponse = buyOrderResponse) } returns Mono.just(position)
+        every { positionRepository.addOpenOrder( documentId = "new-position-doc-id", orderResponse = buyOrderResponseB) } returns Mono.just(position)
         every { stateRepository.updateState(State(exchange = "binance", symbol="SOLBTC", long_position="new-position-doc-id", short_position=null)) } returns Mono.just(finalLongState)
 
         val botSrc: Mono<State> = bot.longTrigger()
@@ -80,7 +82,20 @@ class TestTradingBot {
             .expectComplete()
             .verify()
 
-       // verify(exactly = 1) { stateRepository.getState("SOLBTC") }
+        // initial get state
+        verify(exactly = 1) { stateRepository.getState("SOLBTC") }
+        // closing shot and opening long - 2x long trades
+        verify(exactly = 2) { tradeClient.placeNewOrder(any()) }
+        // save short closing long and new long open trade
+        verify(exactly = 2) { tradeRepository.saveOrderResponse(any()) }
+        // position repository, close short position
+        verify(exactly = 1) { positionRepository.addCloseOrder(any(), any()) }
+        // create new empty position
+        verify(exactly = 1) { positionRepository.createPosition(any()) }
+        // position repository, open long position
+        verify(exactly = 1) { positionRepository.addOpenOrder("new-position-doc-id", buyOrderResponseB) }
+        // finally, update state with new long position
+        verify(exactly = 1) { stateRepository.updateState(finalLongState) }
     }
 
 

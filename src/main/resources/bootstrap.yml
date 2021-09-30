@@ -6,8 +6,8 @@ spring:
       secretmanager:
         enabled: true
       project-id: trading-326621
-      credentials:
-        location: file://serviceaccount.json
+#      credentials:
+#        location: file://serviceaccount.json
 
 # logging
 logging:
