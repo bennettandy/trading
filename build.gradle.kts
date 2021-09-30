@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "uk.co.avsoftware"
-version = "0.0.2"
+version = "0.0.3"
 java.sourceCompatibility = JavaVersion.VERSION_11
 
 repositories {
@@ -16,7 +16,6 @@ repositories {
 }
 
 dependencies {
-//	implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive:2.5.4")
 	implementation("org.springframework.boot:spring-boot-starter-webflux:2.5.4")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.12.5")
 	implementation("io.projectreactor.kotlin:reactor-kotlin-extensions:1.1.4")
@@ -30,9 +29,13 @@ dependencies {
 	implementation ("com.google.api-client:google-api-client:1.32.1")
 	implementation ("com.google.http-client:google-http-client:1.40.0")
 
-	testImplementation("org.springframework.boot:spring-boot-starter-test:2.5.4")
+	testImplementation("org.springframework.boot:spring-boot-starter-test:2.5.5")
 	testImplementation("io.projectreactor:reactor-test:3.4.10")
 	testImplementation("io.mockk:mockk:1.12.0")
+//	testImplementation("android.arch.core:core-testing:1.1.1")
+	testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.4.0")
+	testImplementation ("junit:junit:4.13.1")
+
 }
 
 tasks.withType<KotlinCompile> {

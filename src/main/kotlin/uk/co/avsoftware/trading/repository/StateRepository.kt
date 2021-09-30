@@ -8,7 +8,15 @@ import uk.co.avsoftware.trading.repository.service.StateService
 @Service
 class StateRepository(val stateService: StateService) {
 
-    fun getState(): Mono<State> = stateService.retrieveState()
+    fun isLong(symbol: String): Mono<Boolean> =
+        getState(symbol).map { it.long_position != null }
+
+    fun isShort(symbol: String): Mono<Boolean> =
+        getState(symbol).map { it.short_position != null }
+
+
+
+    fun getState(symbol: String): Mono<State> = stateService.retrieveState(symbol)
 
     fun updateState(state: State?): Mono<State> {
         return state?.let {

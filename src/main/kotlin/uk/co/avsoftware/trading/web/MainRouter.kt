@@ -7,29 +7,30 @@ import org.springframework.web.reactive.function.server.RequestPredicates.*
 import org.springframework.web.reactive.function.server.RouterFunction
 import org.springframework.web.reactive.function.server.RouterFunctions
 import org.springframework.web.reactive.function.server.ServerResponse
+import uk.co.avsoftware.trading.bot.BotHandler
 import uk.co.avsoftware.trading.bot.TradingBot
 
 @Configuration(proxyBeanMethods = false)
 class MainRouter() {
 
     @Bean
-    fun route(tradingBot: TradingBot): RouterFunction<ServerResponse> =
+    fun route(tradingBot: TradingBot, botHandler: BotHandler): RouterFunction<ServerResponse> =
         RouterFunctions.route(POST("/bot/long")
-                .and(accept(MediaType.APPLICATION_JSON))) { tradingBot.longTrigger() }
+                .and(accept(MediaType.APPLICATION_JSON))) { botHandler.longTrigger() }
             .andRoute(POST("/bot/short")
-                .and(accept(MediaType.APPLICATION_JSON))) { tradingBot.shortTrigger() }
+                .and(accept(MediaType.APPLICATION_JSON))) { botHandler.shortTrigger() }
             .andRoute(POST("/bot/short/tp")
-                .and(accept(MediaType.APPLICATION_JSON))) { tradingBot.shortTakeProfit() }
+                .and(accept(MediaType.APPLICATION_JSON))) { botHandler.shortTakeProfit() }
             .andRoute(POST("/bot/long/tp")
-                .and(accept(MediaType.APPLICATION_JSON))) { tradingBot.longTakeProfit() }
+                .and(accept(MediaType.APPLICATION_JSON))) { botHandler.longTakeProfit() }
             .andRoute(POST("/bot/bullish")
                 .and(accept(MediaType.APPLICATION_JSON))) { tradingBot.bullish() }
             .andRoute(POST("/bot/bearish")
                 .and(accept(MediaType.APPLICATION_JSON))) { tradingBot.bearish() }
 
                 // fixme: comment
-            .andRoute(GET("/test/reset")) { tradingBot.reset() }
-            .andRoute(GET("/test/clear")) { tradingBot.clear() }
+            .andRoute(GET("/test/open")) { tradingBot.testOpen() }
+            .andRoute(GET("/test/close")) { tradingBot.testClose() }
             .andRoute(GET("/test")) { tradingBot.test() }
 
 

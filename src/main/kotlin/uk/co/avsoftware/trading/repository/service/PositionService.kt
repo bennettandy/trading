@@ -23,11 +23,11 @@ class PositionService {
 
 
     // obtain open position
-    fun retrieveOpenPosition(exchange: String = "binance", symbol: String): Mono<Position> {
+    fun retrievePosition(documentId: String): Mono<Position> {
 
         val positionsCollection = dbFirestore.collection(COL_NAME)
 
-        val position = positionsCollection.document("${exchange}-${symbol}")
+        val position = positionsCollection.document(documentId)
 
         val future: ApiFuture<DocumentSnapshot> = position.get()
 
@@ -38,8 +38,8 @@ class PositionService {
 
     }
 
-    fun createNewPosition(exchange: String = "binance", symbol: String, position: Position): Mono<Position> {
-
+    // insert the passed in Position and return document reference id
+    fun createNewPosition(position: Position): Mono<String> {
         val positionsCollection = dbFirestore.collection(COL_NAME)
         val future: ApiFuture<DocumentReference> = positionsCollection.add(position)
 
@@ -47,7 +47,7 @@ class PositionService {
             .doOnSuccess { logger.debug { "Created position $it" } }
             .doOnError { logger.debug { "Failed to create position ${it.message}" } }
             .doOnSuccess { logger.debug { "Document Ref id ${it.id}"}}
-            .map { position }
+            .map { reference -> reference.id }
     }
 
     fun updatePosition(position: Position): Mono<String> {

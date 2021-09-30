@@ -1,79 +1,57 @@
 package uk.co.avsoftware.trading.bot
 
 import mu.KotlinLogging
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
-import org.springframework.web.reactive.function.BodyInserters.fromValue
 import org.springframework.web.reactive.function.server.ServerResponse
 import reactor.core.publisher.Mono
-import uk.co.avsoftware.trading.client.binance.SpotTradeClient
+import uk.co.avsoftware.trading.client.binance.TradeClient
 import uk.co.avsoftware.trading.client.binance.model.trade.OrderSide
 import uk.co.avsoftware.trading.client.binance.model.trade.OrderType
 import uk.co.avsoftware.trading.client.binance.request.NewOrderRequest
-import uk.co.avsoftware.trading.client.binance.response.OrderFill
 import uk.co.avsoftware.trading.client.binance.response.OrderResponse
-import uk.co.avsoftware.trading.database.model.ServiceError
+import uk.co.avsoftware.trading.database.model.Position
 import uk.co.avsoftware.trading.database.model.State
 import uk.co.avsoftware.trading.repository.PositionRepository
 import uk.co.avsoftware.trading.repository.StateRepository
+import uk.co.avsoftware.trading.repository.TradeRepository
 
 @Component
 class TradingBot(
-    val tradeClient: SpotTradeClient,
+    val tradeClient: TradeClient,
     val positionRepository: PositionRepository,
-    val stateRepository: StateRepository
+    val stateRepository: StateRepository,
+    val tradeRepository: TradeRepository
 ) {
 
     private val logger = KotlinLogging.logger {}
 
-    @Value("\${sm://projects/1042444923718/secrets/binance-api-key}")
-    lateinit var key: String
-
-    fun longTrigger(): Mono<ServerResponse> =
-        stateRepository.getState()
-            .doOnSuccess { logger.info("LONG TRIGGER : S ${it.isShort}, L ${it.isLong}") }
+    fun longTrigger(): Mono<State> =
+        stateRepository.getState(SYMBOL)
+            .doOnSuccess { logger.info("LONG TRIGGER : S ${it.short_position}, L ${it.long_position}") }
             .flatMap { state: State ->
-                closeExistingShort(state)
-                    .flatMap { newState -> placeLong(newState) }
-            }
-            .flatMap { ServerResponse.ok().build() }
-            .onErrorResume {
-                logger.error("ERROR: $it")
-                ServerResponse.notFound().build()
+                closeAnyExistingShort(state)
+                    .flatMap { newState -> placeLongIfNoPosition(newState) }
             }
 
-    fun shortTrigger(): Mono<ServerResponse> =
-        stateRepository.getState()
-            .doOnSuccess { logger.info("SHORT TRIGGER : S ${it.isShort}, L ${it.isLong}") }
+
+    fun shortTrigger(): Mono<State> =
+        stateRepository.getState(SYMBOL)
+            .doOnSuccess { logger.info("SHORT TRIGGER : S ${it.short_position}, L ${it.long_position}") }
             .flatMap { state: State ->
-                closeExistingLong(state)
-                    .flatMap { newState -> placeShort(newState) }
-            }
-            .flatMap { ServerResponse.ok().build() }
-            .onErrorResume {
-                logger.error("ERROR: $it")
-                ServerResponse.notFound().build()
+                closeAnyExistingLong(state)
+                    .flatMap { newState -> placeShortIfNoPosition(newState) }
             }
 
-    fun longTakeProfit(): Mono<ServerResponse> =
-        stateRepository.getState()
-            .doOnSuccess { logger.info("LONG TP : S ${it.isShort}, L ${it.isLong}") }
-            .flatMap { state: State -> closeExistingLong(state) }
-            .flatMap { ServerResponse.ok().build() }
-            .onErrorResume {
-                logger.error("ERROR: $it")
-                ServerResponse.notFound().build()
-            }
+    fun longTakeProfit(): Mono<State> =
+        stateRepository.getState(SYMBOL)
+            .doOnSuccess { logger.info("LONG TP : S ${it.short_position}, L ${it.long_position}") }
+            .flatMap { state: State -> closeAnyExistingLong(state) }
 
-    fun shortTakeProfit(): Mono<ServerResponse> =
-        stateRepository.getState()
-            .doOnSuccess { logger.info("SHORT TP : S ${it.isShort}, L ${it.isLong}") }
-            .flatMap { state: State -> closeExistingShort(state) }
-            .flatMap { ServerResponse.ok().build() }
-            .onErrorResume {
-                logger.error("ERROR: $it")
-                ServerResponse.notFound().build()
-            }
+    fun shortTakeProfit(): Mono<State> =
+        stateRepository.getState(SYMBOL)
+            .doOnSuccess { logger.info("SHORT TP : S ${it.short_position}, L ${it.long_position}") }
+            .flatMap { state: State -> closeAnyExistingShort(state) }
+
 
     fun bullish(): Mono<ServerResponse> {
         logger.info("BULLISH")
@@ -86,86 +64,118 @@ class TradingBot(
     }
 
     fun test(): Mono<ServerResponse> {
-        return positionRepository.getPosition()
-
-            // update position
-            .flatMap { positionRepository.addCloseOrder( orderResponse =  testOrderResponse()) }
-
-            .flatMap { position ->
-                ServerResponse.ok().body(fromValue(position))
-            }
-            .onErrorResume { ServerResponse.badRequest().body(fromValue(ServiceError.from(it))) }
+        return ServerResponse.ok().build()
     }
 
-    fun reset(): Mono<ServerResponse> {
-        return positionRepository.getPosition()
-
-            // update position
-            // update position
-            .flatMap { positionRepository.addOpenOrder( orderResponse =  testOrderResponse()) }
-
-            .flatMap { position ->
-                ServerResponse.ok().body(fromValue(position))
-            }
-            .onErrorResume { ServerResponse.badRequest().body(fromValue(ServiceError.from(it))) }
+    fun testOpen(): Mono<ServerResponse> {
+        return ServerResponse.ok().build()
     }
 
-    fun clear(): Mono<ServerResponse> {
-        return positionRepository.getPosition()
-
-            // update position
-            .map { it.copy(
-                open_quantity = emptyList(),
-                open_price = emptyList(),
-                open_commission = emptyList(),
-                close_quantity = emptyList(),
-                close_price = emptyList(),
-                close_commission = emptyList(),
-                status = "CLOSED"
-            ) }
-            // update position
-            .flatMap { positionRepository.updatePosition( it) }
-
-            .flatMap { position ->
-                ServerResponse.ok().body(fromValue(position))
-            }
-            .onErrorResume { ServerResponse.badRequest().body(fromValue(ServiceError.from(it))) }
+    fun testClose(): Mono<ServerResponse> {
+        return ServerResponse.ok().build()
     }
 
-    private fun closeExistingShort(state: State): Mono<State> {
-        return when (state.isShort) {
+    private fun closeAnyExistingShort(state: State): Mono<State> {
+        val shortPositionId = state.short_position
+        return when (shortPositionId != null) {
+            // we have an existing short position, so place new Long Order
             true -> tradeClient.placeNewOrder(longRequest())
+                .doOnSuccess { logger.info { "order response $it" } }
+                // save Long order response to db
+                .flatMap { orderResponse ->
+                    tradeRepository.saveOrderResponse(orderResponse)
+                        .flatMap { _ ->
+                            // Long Order Response -> set on current short position
+                            positionRepository.addCloseOrder(
+                                documentId = shortPositionId,
+                                orderResponse = orderResponse
+                            )
+                                // remove short position from state
+                                .flatMap { stateRepository.updateState(state.copy(short_position = null)) }
+                        }
+                }
                 .doOnSuccess { logger.info("Close Short Success") }
-                .flatMap { stateRepository.updateState(state.copy(isShort = false)) }
             false -> Mono.just(state)
         }
     }
 
-    private fun closeExistingLong(state: State): Mono<State> {
-        return when (state.isLong) {
+    private fun closeAnyExistingLong(state: State): Mono<State> {
+        val longPositionId = state.long_position
+        return when (longPositionId != null) {
+            // we have an existing long position, so place new Short Order
             true -> tradeClient.placeNewOrder(shortRequest())
+                // save Short order response to db
+                .flatMap { shortOrderResponse ->
+                    tradeRepository.saveOrderResponse(shortOrderResponse)
+                        .flatMap { _ ->
+                            // Short Order Response -> set on current long position
+                            positionRepository.addCloseOrder(
+                                documentId = longPositionId,
+                                orderResponse = shortOrderResponse
+                            )
+                                // remove long position from state
+                                .flatMap { stateRepository.updateState(state.copy(long_position = null)) }
+                        }
+                }
                 .doOnSuccess { logger.info("Close Long Success") }
-                .flatMap { stateRepository.updateState(state.copy(isLong = false)) }
             false -> Mono.just(state)
         }
     }
 
-    private fun placeLong(state: State): Mono<State> {
-        if (!state.isLong) {
-            return tradeClient.placeNewOrder(longRequest())
+    private fun placeLongIfNoPosition(state: State): Mono<State> {
+        val longPositionId = state.long_position
+        return if (longPositionId == null) {
+            // we have no long position, so place a long order
+            tradeClient.placeNewOrder(longRequest())
+                // save Long order response to db for records
+                .flatMap { orderResponse ->
+                    tradeRepository.saveOrderResponse(orderResponse)
+                        .flatMap { _ ->
+                            // Create a new Long Position
+                            val newPosition = Position(exchange = "binance", symbol = "SOLBTC")
+                            positionRepository.createPosition(newPosition)
+                                // Open the Position with the current Long Order
+                                .flatMap { documentId ->
+                                    positionRepository.addOpenOrder(
+                                        documentId = documentId,
+                                        orderResponse = orderResponse
+                                    )
+                                        .flatMap { // add document ID of Long position to state
+                                            stateRepository.updateState(state.copy(long_position = documentId))
+                                        }
+                                }
+                        }
+                }
                 .doOnSuccess { logger.info("Open Long Success") }
-                .flatMap { stateRepository.updateState(state.copy(isLong = true)) }
-        }
-        else return Mono.just(state)
+        } else Mono.just(state) // already Long, do nothing
     }
 
-    private fun placeShort(state: State): Mono<State> {
-        if (!state.isShort) {
-            return tradeClient.placeNewOrder(shortRequest())
+    private fun placeShortIfNoPosition(state: State): Mono<State> {
+        val shortPositionId = state.short_position
+        return if (shortPositionId == null) {
+            // we have no short position, so place a short order
+            tradeClient.placeNewOrder(shortRequest())
+                // save Short order response to db for records
+                .flatMap { orderResponse ->
+                    tradeRepository.saveOrderResponse(orderResponse)
+                        .flatMap { _ ->
+                            // Create a new Short Position
+                            val newPosition = Position(exchange = "binance", symbol = "SOLBTC")
+                            positionRepository.createPosition(newPosition)
+                                // Open the Position with the current Short Order
+                                .flatMap { documentId ->
+                                    positionRepository.addOpenOrder(
+                                        documentId = documentId,
+                                        orderResponse = orderResponse
+                                    )
+                                        .flatMap { // add document ID of Short position to state
+                                            stateRepository.updateState(state.copy(short_position = documentId))
+                                        }
+                                }
+                        }
+                }
                 .doOnSuccess { logger.info("Open Short Success") }
-                .flatMap { stateRepository.updateState(state.copy(isShort = true)) }
-        }
-        else return Mono.just(state)
+        } else Mono.just(state) // already Long, do nothing
     }
 
     private fun longRequest() =
@@ -186,19 +196,7 @@ class TradingBot(
 
     companion object {
         const val TRADE_AMOUNT = "30.0"
+        const val SYMBOL = "SOLBTC"
     }
 
-    private fun testOrderResponse(): OrderResponse {
-        return OrderResponse(
-            fills = listOf(
-                OrderFill(
-                    price = 10.0,
-                    qty = 20.0,
-                    commission = 0.0023,
-                    commissionAsset = "BTC"
-                )
-            ),
-            symbol = "SOLBTC"
-        )
-    }
 }

@@ -9,7 +9,9 @@ import uk.co.avsoftware.trading.repository.service.PositionService
 @Service
 class PositionRepository(val positionService: PositionService) {
 
-    fun getPosition(symbol: String = "SOLBTC"): Mono<Position> = positionService.retrieveOpenPosition(symbol = symbol)
+    fun getPosition(documentId: String): Mono<Position> = positionService.retrievePosition(documentId = documentId)
+
+    fun createPosition( position: Position): Mono<String> = positionService.createNewPosition(position = position)
 
     fun updatePosition(position: Position?): Mono<Position> {
         return position?.let {
@@ -17,42 +19,56 @@ class PositionRepository(val positionService: PositionService) {
         } ?: Mono.empty()
     }
 
-    fun addOpenOrder(symbol: String = "SOLBTC", orderResponse: OrderResponse): Mono<Position> {
-        return getPosition(symbol)
+    fun addOpenOrder(documentId: String, orderResponse: OrderResponse): Mono<Position> {
+        return getPosition(documentId)
             .map { addOpenOrderToPosition(it, orderResponse) }
             .flatMap { updatePosition(it) }
     }
 
-    fun addCloseOrder(symbol: String = "SOLBTC", orderResponse: OrderResponse): Mono<Position> {
-        return getPosition(symbol)
+    fun addCloseOrder(documentId: String, orderResponse: OrderResponse): Mono<Position> {
+        return getPosition(documentId)
             .map { addCloseOrderToPosition(it, orderResponse) }
-            .flatMap { updatePosition(it) }
             .map { calculateProfits(it) }
+            .flatMap { updatePosition(it) }
+
     }
 
-    private fun addOpenOrderToPosition(position: Position, orderResponse: OrderResponse): Position{
+    fun addOpenOrderToPosition(position: Position, orderResponse: OrderResponse): Position{
         return position.apply {
             with (orderResponse){
                 open_commission = fills?.map { orderFill -> orderFill.commission  } ?: emptyList()
                 open_quantity = fills?.map { orderFill -> orderFill.qty  } ?: emptyList()
                 open_price = fills?.map { orderFill -> orderFill.price  } ?: emptyList()
+                direction = orderResponse.side?.name ?: "missing"
+                open_commission_currency = fills?.first()?.commissionAsset ?: "unknown"
+                open_order_id = orderResponse.orderId.toString()
+                open_time_stamp = orderResponse.transactTime ?: -1
             }
-            status = "OPEN"
         }
     }
 
-    private fun addCloseOrderToPosition(position: Position, orderResponse: OrderResponse): Position{
+    fun addCloseOrderToPosition(position: Position, orderResponse: OrderResponse): Position{
         return position.apply {
             with (orderResponse){
                 close_commission = fills?.map { orderFill -> orderFill.commission  } ?: emptyList()
                 close_quantity = fills?.map { orderFill -> orderFill.qty  } ?: emptyList()
                 close_price = fills?.map { orderFill -> orderFill.price } ?: emptyList()
+                direction = orderResponse.side?.name ?: "missing"
+                close_commission_currency = fills?.first()?.commissionAsset ?: "unknown"
+                close_order_id = orderResponse.orderId.toString()
+                close_time_stamp = orderResponse.transactTime ?: -1
             }
-            status = "CLOSED"
         }
     }
 
     private fun calculateProfits(position: Position): Position {
-        return position
+        return position.apply {
+            open_qty = position.open_quantity.sum()
+            open_cost = position.open_quantity.mapIndexed { index, d -> d*position.open_price[index]  }.sum()
+            open_comm = position.open_commission.sum()
+            close_qty = position.close_quantity.sum()
+            close_cost = position.close_quantity.mapIndexed { index, d -> d*position.close_price[index]  }.sum()
+            close_comm = position.close_commission.sum()
+        }
     }
 }
