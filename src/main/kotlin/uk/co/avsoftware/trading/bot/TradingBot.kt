@@ -31,6 +31,7 @@ class TradingBot(
             .flatMap { state: State ->
                 closeAnyExistingShort(state)
                     .checkpoint("close any existing short")
+                    .doOnSuccess { newState -> logger.info { "New state $newState" } }
                     .flatMap { newState -> placeLongIfNoPosition(newState)
                         .checkpoint("place long if no position")
                     }

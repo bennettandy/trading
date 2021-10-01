@@ -17,18 +17,21 @@ class PositionRepository(val positionService: PositionService) {
     fun createPosition( position: Position): Mono<String> = positionService.createNewPosition(position = position)
 
     fun updatePosition(position: Position?): Mono<Position> {
+        logger.info { "update position $position" }
         return position?.let {
             positionService.updatePosition(it).map { position }
         } ?: Mono.empty()
     }
 
     fun addOpenOrder(documentId: String, orderResponse: OrderResponse): Mono<Position> {
+        logger.info { "add open order $documentId" }
         return getPosition(documentId)
             .map { addOpenOrderToPosition(it, orderResponse) }
             .flatMap { updatePosition(it) }
     }
 
     fun addCloseOrder(documentId: String, orderResponse: OrderResponse): Mono<Position> {
+        logger.info { "add close order $documentId" }
         return getPosition(documentId)
             .map { addCloseOrderToPosition(it, orderResponse) }
             .map { calculateProfits(it) }

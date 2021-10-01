@@ -24,7 +24,7 @@ class PositionService {
 
     // obtain open position
     fun retrievePosition(documentId: String): Mono<Position> {
-
+        logger.info { "Retrieve document id $documentId"}
         val positionsCollection = dbFirestore.collection(COL_NAME)
 
         val position = positionsCollection.document(documentId)
