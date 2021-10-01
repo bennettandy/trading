@@ -135,13 +135,16 @@ class TradingBot(
                             val newPosition = Position(exchange = "binance", symbol = "SOLBTC")
                             positionRepository.createPosition(newPosition)
                                 // Open the Position with the current Long Order
-                                .flatMap { documentId ->
+                                .flatMap { positionDocId ->
                                     positionRepository.addOpenOrder(
-                                        documentId = documentId,
+                                        documentId = positionDocId,
                                         orderResponse = orderResponse
                                     )
+                                        .doOnSuccess { logger.info { "Added open order to position" } }
                                         .flatMap { // add document ID of Long position to state
-                                            stateRepository.updateState(state.copy(long_position = documentId))
+                                            logger.info { "Add position doc id $positionDocId to state long_position" }
+                                            stateRepository.updateState(state.copy(long_position = positionDocId))
+                                                .doOnSuccess { logger.info { "Updated State: $it" } }
                                         }
                                 }
                         }
@@ -162,15 +165,20 @@ class TradingBot(
                             // Create a new Short Position
                             val newPosition = Position(exchange = "binance", symbol = "SOLBTC")
                             positionRepository.createPosition(newPosition)
+                                .doOnSuccess { logger.info { "Created new position id: $it" } }
                                 // Open the Position with the current Short Order
-                                .flatMap { documentId ->
+                                .flatMap { positionDocId ->
                                     positionRepository.addOpenOrder(
-                                        documentId = documentId,
+                                        documentId = positionDocId,
                                         orderResponse = orderResponse
                                     )
+                                        .doOnSuccess { logger.info { "Added open order to position" } }
                                         .flatMap { // add document ID of Short position to state
-                                            stateRepository.updateState(state.copy(short_position = documentId))
+                                            logger.info { "Add position doc id $positionDocId to state short_position" }
+                                            stateRepository.updateState(state.copy(short_position = positionDocId))
+                                                .doOnSuccess { logger.info { "Updated State: $it" } }
                                         }
+
                                 }
                         }
                 }
