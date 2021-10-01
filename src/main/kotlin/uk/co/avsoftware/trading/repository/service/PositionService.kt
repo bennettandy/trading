@@ -32,7 +32,7 @@ class PositionService {
         val future: ApiFuture<DocumentSnapshot> = position.get()
 
         return Mono.fromSupplier { future.get() }
-            .doOnSuccess { logger.info { "Got position $it" } }
+            .doOnSuccess { logger.info { "Got position $it id: ${it.id}" } }
             .doOnError { logger.info { "Failed to get position ${it.message}" } }
             .map { it.toObject(Position::class.java) }
 
@@ -44,7 +44,7 @@ class PositionService {
         val future: ApiFuture<DocumentReference> = positionsCollection.add(position)
 
         return Mono.fromSupplier { future.get() }
-            .doOnSuccess { logger.debug { "Created position $it" } }
+            .doOnSuccess { logger.debug { "Created position $it - id:${it.id}" } }
             .doOnError { logger.debug { "Failed to create position ${it.message}" } }
             .doOnSuccess { logger.debug { "Document Ref id ${it.id}"}}
             .map { reference -> reference.id }

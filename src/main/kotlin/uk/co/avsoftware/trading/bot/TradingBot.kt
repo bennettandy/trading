@@ -195,7 +195,7 @@ class TradingBot(
         )
 
     companion object {
-        const val TRADE_AMOUNT = "30.0"
+        const val TRADE_AMOUNT = "1.0"
         const val SYMBOL = "SOLBTC"
     }
 
