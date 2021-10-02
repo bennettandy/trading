@@ -22,9 +22,9 @@ class StateService {
 
     fun retrieveState(symbol: String): Mono<State> {
         val configCollection = dbFirestore.collection(COL_NAME)
-        configCollection.document(symbol).get()
-        val future: ApiFuture<DocumentSnapshot> = configCollection.document("root").get()
+        val future: ApiFuture<DocumentSnapshot> = configCollection.document(symbol).get()
         return Mono.fromSupplier { future.get() }
+            .checkpoint("retrieve State")
             .doOnSuccess { logger.info { "Got state $it" } }
             .doOnError { logger.info { "Failed to get state ${it.message}" } }
             .map {  documentSnapshot -> documentSnapshot.toObject(State::class.java) }
@@ -34,7 +34,11 @@ class StateService {
         val configCollection = dbFirestore.collection(COL_NAME)
         val collectionsApiFuture: ApiFuture<WriteResult> = configCollection.document(state.symbol).set(state)
         return Mono.fromSupplier { collectionsApiFuture.get() }
+            .checkpoint("update State")
+            .doOnSuccess { logger.info { "Updated State: $it" }}
+            .doOnError { logger.info { "Failed to update state ${it.message}" } }
             .map { result -> result.updateTime.toString() }
+
     }
 
 }

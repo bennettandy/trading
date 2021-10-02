@@ -1,6 +1,6 @@
 package uk.co.avsoftware.trading.database.model
 
-data class Position(
+data class CompletedTrade(
     var exchange: String = "",
     var name: String = "",
     var symbol: String = "",

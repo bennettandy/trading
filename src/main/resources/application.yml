@@ -2,7 +2,7 @@ spring:
   application:
     name: "trading"
   profiles:
-    active: "local"
+    active: "test"
 
 api:
   binance:

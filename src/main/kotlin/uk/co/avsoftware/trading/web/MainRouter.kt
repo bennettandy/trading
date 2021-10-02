@@ -24,9 +24,9 @@ class MainRouter() {
             .andRoute(POST("/bot/long/tp")
                 .and(accept(MediaType.APPLICATION_JSON))) { botHandler.longTakeProfit() }
             .andRoute(POST("/bot/bullish")
-                .and(accept(MediaType.APPLICATION_JSON))) { tradingBot.bullish() }
+                .and(accept(MediaType.APPLICATION_JSON))) { botHandler.bullish() }
             .andRoute(POST("/bot/bearish")
-                .and(accept(MediaType.APPLICATION_JSON))) { tradingBot.bearish() }
+                .and(accept(MediaType.APPLICATION_JSON))) { botHandler.bearish() }
 
                 // fixme: comment
             .andRoute(GET("/test/open")) { tradingBot.testOpen() }
