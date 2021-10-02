@@ -93,7 +93,7 @@ class TradingBot(
                             .thenReturn(state)
                     }
             }
-            .doOnSuccess { state -> logger.info { "closed any existing trade" } }
+            .doOnSuccess { _ -> logger.info { "closed any existing trade" } }
 
     // fixme: identical to longTakeProfit
     fun shortTakeProfit(): Mono<State> =
@@ -111,7 +111,7 @@ class TradingBot(
                             .thenReturn(state)
                     }
             }
-            .doOnSuccess { state -> logger.info { "closed any existing trade" } }
+            .doOnSuccess { _ -> logger.info { "closed any existing trade" } }
 
 
     fun bullish(): Mono<ServerResponse> {
