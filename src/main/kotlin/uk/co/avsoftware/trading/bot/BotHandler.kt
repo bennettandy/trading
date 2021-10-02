@@ -41,4 +41,7 @@ class BotHandler( val tradingBot: TradingBot ) {
             logger.error("ERROR: $it", it)
             ServerResponse.notFound().build()
         }
+
+    fun bullish(): Mono<ServerResponse> = longTrigger()
+    fun bearish(): Mono<ServerResponse> = shortTrigger()
 }

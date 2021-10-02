@@ -31,3 +31,5 @@ data class OrderFill(
     val commission: Double = 0.0,
     val commissionAsset: String = ""
 )
+
+fun OrderResponse.orderQuantity() = this.fills?.sumOf { it.qty } ?: 0.0

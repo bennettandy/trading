@@ -28,13 +28,13 @@ class DummyTradeClient : TradeClient {
     private val logger = KotlinLogging.logger {}
 
     override fun placeNewOrder(newOrderRequest: NewOrderRequest): Mono<OrderResponse> {
-        logger.warn { "Placing Dummy Trade" }
-        fun createOrderResponse(orderSide: OrderSide, clientOrderId: String): OrderResponse {
+        logger.warn { "Placing Dummy Trade: ${newOrderRequest.side}: ${newOrderRequest.quantity}" }
+        fun createOrderResponse(quantity: Double, orderSide: OrderSide, clientOrderId: String): OrderResponse {
             return OrderResponse(
                 fills = listOf(
                     OrderFill(
                         price = 10.0,
-                        qty = 20.0,
+                        qty = quantity,
                         commission = 0.0023,
                         commissionAsset = "BTC"
                     )
@@ -46,7 +46,7 @@ class DummyTradeClient : TradeClient {
                 transactTime = System.currentTimeMillis()
             )
         }
-        return Mono.just(createOrderResponse(newOrderRequest.side, newOrderRequest.newClientOrderId ?: ""))
+        return Mono.just(createOrderResponse(newOrderRequest.quantity?.toDouble() ?: 0.0, newOrderRequest.side, newOrderRequest.newClientOrderId ?: ""))
     }
 
     @PostConstruct
