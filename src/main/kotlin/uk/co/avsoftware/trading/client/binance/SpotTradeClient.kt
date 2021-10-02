@@ -2,7 +2,6 @@ package uk.co.avsoftware.trading.client.binance
 
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
@@ -22,9 +21,11 @@ interface TradeClient {
 }
 
 @Component
-@Profile("test")
 class DummyTradeClient : TradeClient {
+    private val logger = KotlinLogging.logger {}
+
     override fun placeNewOrder(newOrderRequest: NewOrderRequest): Mono<OrderResponse> {
+        logger.warn { "Placing Dummy Trade" }
         fun createOrderResponse(orderSide: OrderSide, clientOrderId: String): OrderResponse {
             return OrderResponse(
                 fills = listOf(
@@ -46,7 +47,7 @@ class DummyTradeClient : TradeClient {
     }
 }
 
-@Component
+//@Component
 class SpotTradeClient(@Qualifier("binanceApiClient") val webClient: WebClient, val binanceSigner: BinanceSigner, val tradeRepository: TradeRepository): TradeClient {
 
     private val logger = KotlinLogging.logger {}

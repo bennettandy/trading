@@ -26,8 +26,8 @@ data class OrderResponse(
 )
 
 data class OrderFill(
-    val price: Double,
-    val qty: Double,
-    val commission: Double,
-    val commissionAsset: String
+    val price: Double = 0.0,
+    val qty: Double = 0.0,
+    val commission: Double = 0.0,
+    val commissionAsset: String = ""
 )
