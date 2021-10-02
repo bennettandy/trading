@@ -10,6 +10,19 @@ api:
     uri: "https://api.binance.com"
     key: "${sm://binance-api-key}"
     secret: "${sm://binance-api-secret}"
+  bybit:
+    description: "bybit exchange api credentials"
 
+---
+spring:
+  profiles: test
 
+firebase:
+  service-account: "${sm://staging-firebase-service-account}"
 
+---
+spring:
+  profiles: production
+
+firebase:
+  service-account: "${sm://firebase-service-account}"

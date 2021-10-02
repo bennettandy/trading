@@ -15,7 +15,7 @@ class FirebaseInitialise {
 
     private val logger = KotlinLogging.logger {}
 
-    @Value("\${sm://firebase-service-account}")
+    @Value("\${firebase.service-account}")
     protected lateinit var firebaseConfig: String
 
     @PostConstruct
