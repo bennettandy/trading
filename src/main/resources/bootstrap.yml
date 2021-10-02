@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: "local"
+    active: "test"
   cloud:
     gcp:
       secretmanager:
@@ -33,7 +33,7 @@ spring:
   config:
     activate:
       on:
-        profile: local
+        profile: test
   cloud:
     gcp:
       secretmanager:
