@@ -27,6 +27,7 @@ class TestTradingBot {
     @Test
     fun testTradingBotLongTriggerWithOpenShortPosition(){
 
+        val orderDocumentReference: DocumentReference = mockk()
         val orderDocumentReferenceA: DocumentReference = mockk()
         val orderDocumentReferenceB: DocumentReference = mockk()
 
@@ -37,13 +38,15 @@ class TestTradingBot {
         val initialShortState = State (
             exchange = "binance",
             symbol = "SOLBTC",
-            open_position = orderDocumentReferenceA
+            open_position = orderDocumentReference,
+            position_size = 1.0
         )
 
         val finalLongState = State (
             exchange = "binance",
             symbol = "SOLBTC",
-            open_position = orderDocumentReferenceB
+            open_position = orderDocumentReferenceB,
+            position_size = 1.0
         )
 
         val bot = TradingBot(
@@ -53,10 +56,14 @@ class TestTradingBot {
             tradeRepository = tradeRepository
         )
 
-        // close short and complete trade
+        // close short and complete trade orders
         every { tradeClient.placeNewOrder(any())} returns Mono.just(buyOrderResponseA) andThen Mono.just(buyOrderResponseB)
+
+        // initial state
         every { stateRepository.getState("SOLBTC") } returns Mono.just(initialShortState)
         every { stateRepository.getTrade(initialShortState) } returns Mono.just(openSellResponse)
+
+        every { tradeRepository.saveOrderResponse(openSellResponse)} returns Mono.just(orderDocumentReference)
         every { tradeRepository.saveOrderResponse(buyOrderResponseA)}
         every { tradeRepository.saveOrderResponse(buyOrderResponseA)} returns Mono.just(orderDocumentReferenceA)
         every { completedTradeRepository.createCompletedTrade(openSellResponse, buyOrderResponseA)} returns Mono.just("doc-id-string")

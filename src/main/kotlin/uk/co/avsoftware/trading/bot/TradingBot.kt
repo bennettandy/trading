@@ -29,12 +29,16 @@ class TradingBot(
         stateRepository.getState(SYMBOL)
             .checkpoint("get state")
             .doOnSuccess { logger.info("LONG TRIGGER : State $it") }
-            .flatMap { state ->
-                stateRepository.getTrade(state)
-                    .checkpoint("close any open trade")
-                    // if no trade, get trade is Mono.empty() -> thenReturn always emits 'state'
-                    .flatMap { openTrade -> closeAndCompleteOpenTrade(openTrade) }
-                    .thenReturn(state)
+            .flatMap {
+                filterAlreadyLong(it)
+                    .doOnSuccess { logger.info { "passed filter already long $it" } }
+                    .flatMap { state ->
+                        stateRepository.getTrade(state)
+                            .checkpoint("close any open trade")
+                            // if no trade, get trade is Mono.empty() -> thenReturn always emits 'state'
+                            .flatMap { openTrade -> closeAndCompleteOpenTrade(openTrade) }
+                            .thenReturn(state)
+                    }
             }
 
             .doOnSuccess { state -> logger.info { "closed any existing trade, got state $state" } }
@@ -56,12 +60,16 @@ class TradingBot(
         stateRepository.getState(SYMBOL)
             .checkpoint("get state")
             .doOnSuccess { logger.info("SHORT TRIGGER : State $it") }
-            .flatMap { state ->
-                stateRepository.getTrade(state)
-                    .checkpoint("close any open trade")
-                    // if no trade, get trade is Mono.empty() -> thenReturn always emits 'state'
-                    .flatMap { openTrade -> closeAndCompleteOpenTrade(openTrade) }
+            .flatMap {
+                filterAlreadyShort(it)
+                    .doOnSuccess { logger.info("Passed already short : State $it") }
+                    .flatMap { state ->
+                        stateRepository.getTrade(state)
+                            .checkpoint("close any open trade")
+                            // if no trade, get trade is Mono.empty() -> thenReturn always emits 'state'
+                            .flatMap { openTrade -> closeAndCompleteOpenTrade(openTrade) }
                             .thenReturn(state)
+                    }
             }
             .doOnSuccess { state -> logger.info { "closed any existing trade, got state $state" } }
             .checkpoint("place new short trade")
@@ -177,6 +185,16 @@ class TradingBot(
             type = OrderType.MARKET,
             quantity = String.format("%.8f", tradeAmount)
         )
+
+    private fun filterAlreadyLong(state: State): Mono<State> {
+        return stateRepository.getTrade(state).filter { it.side == OrderSide.SELL }.map { state }
+    }
+
+    private fun filterAlreadyShort(state: State): Mono<State> {
+        return stateRepository.getTrade(state)
+            .filter { it.side == OrderSide.BUY }
+            .map { state }
+    }
 
     companion object {
         const val SYMBOL = "SOLBTC"
