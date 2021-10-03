@@ -10,6 +10,33 @@ api:
     uri: "https://api.binance.com"
     key: "${sm://binance-api-key}"
     secret: "${sm://binance-api-secret}"
+  bybit:
+    description: "bybit exchange api credentials"
+    uri: "https://api.bybit.com"
+    key: "${sm://bybit-api-key}"
+    secret: "${sm://bybit-api-secret}"
 
+---
 
+spring:
+  profiles: "test"
 
+firebase:
+  service-account: "${sm://staging-firebase-service-account}"
+  project-id: "trading-staging-eaee4"
+
+api:
+  bybit:
+    description: "bybit exchange test-net api credentials"
+    uri: "https://api-testnet.bybit.com"
+    key: "${sm://bybit-api-key}"
+    secret: "${sm://bybit-api-secret}"
+
+---
+
+spring:
+  profiles: "production"
+
+firebase:
+  service-account: "${sm://firebase-service-account}"
+  project-id: "trading-326621"

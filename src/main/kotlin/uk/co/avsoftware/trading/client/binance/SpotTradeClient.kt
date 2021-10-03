@@ -9,12 +9,11 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import uk.co.avsoftware.trading.client.binance.model.trade.OrderSide
-import uk.co.avsoftware.trading.client.binance.request.NewOrderRequest
-import uk.co.avsoftware.trading.client.binance.response.BinanceError
-import uk.co.avsoftware.trading.client.binance.response.OrderFill
-import uk.co.avsoftware.trading.client.binance.response.OrderResponse
+import uk.co.avsoftware.trading.client.binance.model.trade.NewOrderRequest
+import uk.co.avsoftware.trading.client.binance.model.trade.BinanceError
+import uk.co.avsoftware.trading.client.binance.model.trade.OrderFill
+import uk.co.avsoftware.trading.client.binance.model.trade.OrderResponse
 import uk.co.avsoftware.trading.client.binance.sign.BinanceSigner
-import uk.co.avsoftware.trading.repository.TradeRepository
 import java.io.IOException
 import javax.annotation.PostConstruct
 
@@ -55,7 +54,11 @@ class DummyTradeClient : TradeClient {
 
 @Component
 @Profile("production")
-class SpotTradeClient(@Qualifier("binanceApiClient") val webClient: WebClient, val binanceSigner: BinanceSigner, val tradeRepository: TradeRepository): TradeClient {
+class SpotTradeClient(
+    @Qualifier("binanceApiClient") val binanceWebClient: WebClient,
+    val binanceSigner: BinanceSigner,
+    @Qualifier("bybitApiClient") val bybitWebClient: WebClient
+): TradeClient {
 
     private val logger = KotlinLogging.logger {}
 
@@ -63,7 +66,7 @@ class SpotTradeClient(@Qualifier("binanceApiClient") val webClient: WebClient, v
         with (binanceSigner){
             val queryString = signQueryString(newOrderRequest.getQueryString())
             logger.debug {"PLACE ORDER $queryString" }
-            webClient.post().uri("/api/v3/order?${queryString}")
+            binanceWebClient.post().uri("/api/v3/order?${queryString}")
                 .accept(MediaType.APPLICATION_JSON)
                 .header("X-MBX-APIKEY", getApiKey() )
                 .retrieve()

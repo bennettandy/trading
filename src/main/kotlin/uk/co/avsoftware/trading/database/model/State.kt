@@ -3,6 +3,7 @@ package uk.co.avsoftware.trading.database.model
 import com.google.cloud.firestore.DocumentReference
 
 data class State(
+    val enabled: Boolean? = null,
     var exchange: String = "",
     var symbol: String = "",
     // open position

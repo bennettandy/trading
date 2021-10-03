@@ -3,7 +3,7 @@ package uk.co.avsoftware.trading.repository
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
-import uk.co.avsoftware.trading.client.binance.response.OrderResponse
+import uk.co.avsoftware.trading.client.binance.model.trade.OrderResponse
 import uk.co.avsoftware.trading.database.model.CompletedTrade
 import uk.co.avsoftware.trading.repository.service.CompletedTradeService
 
@@ -12,7 +12,7 @@ class CompletedTradeRepository(val completedTradeService: CompletedTradeService)
 
     private val logger = KotlinLogging.logger {}
 
-    fun createCompletedTrade( openingOrder: OrderResponse, closingOrder: OrderResponse): Mono<String> {
+    fun createCompletedTrade(openingOrder: OrderResponse, closingOrder: OrderResponse): Mono<String> {
         // todo: simplify this
         val completedTrade = CompletedTrade()
         addOpenOrderToCompletedTrade(completedTrade, openingOrder)
@@ -62,6 +62,7 @@ class CompletedTradeRepository(val completedTradeService: CompletedTradeService)
             close_cost = completedTrade.close_quantity
                 .mapIndexed { index, d -> d*completedTrade.close_price[index]  }.sum()
             close_comm = completedTrade.close_commission.sum()
+            price_delta = open_cost - close_cost
             logger.info { "Calculated Totals: Position: $this" }
         }
     }

@@ -7,9 +7,9 @@ import reactor.core.publisher.Mono
 import uk.co.avsoftware.trading.client.binance.TradeClient
 import uk.co.avsoftware.trading.client.binance.model.trade.OrderSide
 import uk.co.avsoftware.trading.client.binance.model.trade.OrderType
-import uk.co.avsoftware.trading.client.binance.request.NewOrderRequest
-import uk.co.avsoftware.trading.client.binance.response.OrderResponse
-import uk.co.avsoftware.trading.client.binance.response.orderQuantity
+import uk.co.avsoftware.trading.client.binance.model.trade.NewOrderRequest
+import uk.co.avsoftware.trading.client.binance.model.trade.OrderResponse
+import uk.co.avsoftware.trading.client.binance.model.trade.orderQuantity
 import uk.co.avsoftware.trading.database.model.State
 import uk.co.avsoftware.trading.repository.CompletedTradeRepository
 import uk.co.avsoftware.trading.repository.StateRepository
@@ -187,10 +187,14 @@ class TradingBot(
         )
 
     private fun filterAlreadyLong(state: State): Mono<State> {
-        return stateRepository.getTrade(state).filter { it.side == OrderSide.SELL }.map { state }
+        if (state.open_position == null) return Mono.just(state)
+        return stateRepository.getTrade(state)
+            .filter { it.side == OrderSide.SELL }
+            .map { state }
     }
 
     private fun filterAlreadyShort(state: State): Mono<State> {
+        if (state.open_position == null) return Mono.just(state)
         return stateRepository.getTrade(state)
             .filter { it.side == OrderSide.BUY }
             .map { state }

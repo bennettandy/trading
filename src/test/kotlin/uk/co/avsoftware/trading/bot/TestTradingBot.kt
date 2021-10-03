@@ -10,7 +10,7 @@ import reactor.test.StepVerifier
 import uk.co.avsoftware.trading.TestDataHelper
 import uk.co.avsoftware.trading.client.binance.TradeClient
 import uk.co.avsoftware.trading.client.binance.model.trade.OrderSide
-import uk.co.avsoftware.trading.client.binance.response.OrderResponse
+import uk.co.avsoftware.trading.client.binance.model.trade.OrderResponse
 import uk.co.avsoftware.trading.database.model.State
 import uk.co.avsoftware.trading.repository.CompletedTradeRepository
 import uk.co.avsoftware.trading.repository.StateRepository

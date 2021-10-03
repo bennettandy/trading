@@ -9,7 +9,7 @@ import com.google.firebase.cloud.FirestoreClient
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
-import uk.co.avsoftware.trading.client.binance.response.OrderResponse
+import uk.co.avsoftware.trading.client.binance.model.trade.OrderResponse
 
 @Service
 class TradeService() {

@@ -1,4 +1,4 @@
-package uk.co.avsoftware.trading.client.binance.request
+package uk.co.avsoftware.trading.client.binance.model.trade
 
 open class BinanceRequest {
     open fun getQueryString(): String = baseQueryString()
