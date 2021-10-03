@@ -26,5 +26,6 @@ data class CompletedTrade(
     var open_comm: Double = 0.0,
     var close_qty: Double = 0.0,
     var close_cost: Double = 0.0,
-    var close_comm: Double = 0.0
+    var close_comm: Double = 0.0,
+    var price_delta: Double = 0.0
 )

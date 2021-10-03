@@ -62,6 +62,7 @@ class CompletedTradeRepository(val completedTradeService: CompletedTradeService)
             close_cost = completedTrade.close_quantity
                 .mapIndexed { index, d -> d*completedTrade.close_price[index]  }.sum()
             close_comm = completedTrade.close_commission.sum()
+            price_delta = open_cost - close_cost
             logger.info { "Calculated Totals: Position: $this" }
         }
     }
