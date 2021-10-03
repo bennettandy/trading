@@ -18,12 +18,16 @@ class FirebaseInitialise {
     @Value("\${firebase.service-account}")
     protected lateinit var firebaseConfig: String
 
+    @Value("\${firebase.project-id}")
+    protected lateinit var firebaseProjectId: String
+
     @PostConstruct
     fun initialize() {
         logger.info { "Initialising Firebase" }
         try {
-            val inputStream: InputStream = firebaseConfig.byteInputStream()
+            val inputStream: InputStream = firebaseConfig.byteInputStream(Charsets.UTF_8)
             val options: FirebaseOptions = FirebaseOptions.builder()
+                .setProjectId(firebaseProjectId)
                 .setCredentials(GoogleCredentials.fromStream(inputStream))
                 .build()
             FirebaseApp.initializeApp(options)

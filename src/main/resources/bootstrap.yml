@@ -6,8 +6,6 @@ spring:
       secretmanager:
         enabled: true
       project-id: trading-326621
-#      credentials:
-#        location: file://serviceaccount.json
 
 # logging
 logging:
@@ -17,11 +15,10 @@ logging:
     uk.co.avsoftware: DEBUG
 
 ---
+
 spring:
-  config:
-    activate:
-      on:
-        profile: production
+  profiles: "production"
+
   cloud:
     gcp:
       secretmanager:
@@ -30,10 +27,7 @@ spring:
 ---
 
 spring:
-  config:
-    activate:
-      on:
-        profile: test
+  profiles: "test"
   cloud:
     gcp:
       secretmanager:

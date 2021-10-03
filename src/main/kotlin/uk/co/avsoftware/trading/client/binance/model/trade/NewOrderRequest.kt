@@ -1,10 +1,6 @@
-package uk.co.avsoftware.trading.client.binance.request
+package uk.co.avsoftware.trading.client.binance.model.trade
 
 import org.springframework.web.reactive.function.server.ServerRequest
-import uk.co.avsoftware.trading.client.binance.model.trade.NewOrderResponseType
-import uk.co.avsoftware.trading.client.binance.model.trade.OrderSide
-import uk.co.avsoftware.trading.client.binance.model.trade.TimeInForce
-import uk.co.avsoftware.trading.client.binance.model.trade.OrderType
 
 data class NewOrderRequest(
     val symbol: String,

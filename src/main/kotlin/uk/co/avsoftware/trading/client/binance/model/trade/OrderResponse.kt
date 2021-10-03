@@ -1,9 +1,4 @@
-package uk.co.avsoftware.trading.client.binance.response
-
-import uk.co.avsoftware.trading.client.binance.model.trade.OrderSide
-import uk.co.avsoftware.trading.client.binance.model.trade.OrderStatus
-import uk.co.avsoftware.trading.client.binance.model.trade.OrderType
-import uk.co.avsoftware.trading.client.binance.model.trade.TimeInForce
+package uk.co.avsoftware.trading.client.binance.model.trade
 
 data class OrderResponse(
     // ACK
