@@ -43,7 +43,6 @@ class CompletedTradeRepository(val completedTradeService: CompletedTradeService)
                 close_commission = fills?.map { orderFill -> orderFill.commission  } ?: emptyList()
                 close_quantity = fills?.map { orderFill -> orderFill.qty  } ?: emptyList()
                 close_price = fills?.map { orderFill -> orderFill.price } ?: emptyList()
-                direction = orderResponse.side?.name ?: "missing"
                 close_commission_currency = fills?.first()?.commissionAsset ?: "unknown"
                 close_order_id = orderResponse.orderId.toString()
                 close_time_stamp = orderResponse.transactTime ?: -1
