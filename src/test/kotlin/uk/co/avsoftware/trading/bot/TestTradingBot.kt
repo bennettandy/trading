@@ -72,7 +72,7 @@ class TestTradingBot {
         every { tradeRepository.saveOrderResponse(buyOrderResponseB)} returns Mono.just(orderDocumentReferenceB)
         every { stateRepository.updateState(finalLongState)} returns Mono.just(finalLongState)
 
-        val botSrc: Mono<State> = bot.longTrigger()
+        val botSrc: Mono<State> = bot.longTrigger("SOLBTC")
 
         StepVerifier
             .create(botSrc)

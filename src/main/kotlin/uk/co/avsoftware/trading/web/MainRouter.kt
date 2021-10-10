@@ -15,18 +15,18 @@ class MainRouter() {
 
     @Bean
     fun route(tradingBot: TradingBot, botHandler: BotHandler): RouterFunction<ServerResponse> =
-        RouterFunctions.route(POST("/bot/long")
-                .and(accept(MediaType.APPLICATION_JSON))) { botHandler.longTrigger() }
-            .andRoute(POST("/bot/short")
-                .and(accept(MediaType.APPLICATION_JSON))) { botHandler.shortTrigger() }
-            .andRoute(POST("/bot/short/tp")
-                .and(accept(MediaType.APPLICATION_JSON))) { botHandler.shortTakeProfit() }
-            .andRoute(POST("/bot/long/tp")
-                .and(accept(MediaType.APPLICATION_JSON))) { botHandler.longTakeProfit() }
-            .andRoute(POST("/bot/bullish")
-                .and(accept(MediaType.APPLICATION_JSON))) { botHandler.bullish() }
-            .andRoute(POST("/bot/bearish")
-                .and(accept(MediaType.APPLICATION_JSON))) { botHandler.bearish() }
+        RouterFunctions.route(POST("/bot/{symbol}/long")
+                .and(accept(MediaType.APPLICATION_JSON))) { botHandler.longTrigger(it.pathVariable("symbol")) }
+            .andRoute(POST("/bot/{symbol}/short")
+                .and(accept(MediaType.APPLICATION_JSON))) { botHandler.shortTrigger(it.pathVariable("symbol")) }
+            .andRoute(POST("/bot/{symbol}/short/tp")
+                .and(accept(MediaType.APPLICATION_JSON))) { botHandler.shortTakeProfit(it.pathVariable("symbol")) }
+            .andRoute(POST("/bot/{symbol}/long/tp")
+                .and(accept(MediaType.APPLICATION_JSON))) { botHandler.longTakeProfit(it.pathVariable("symbol")) }
+            .andRoute(POST("/bot/{symbol}/bullish")
+                .and(accept(MediaType.APPLICATION_JSON))) { botHandler.bullish(it.pathVariable("symbol")) }
+            .andRoute(POST("/bot/{symbol}/bearish")
+                .and(accept(MediaType.APPLICATION_JSON))) { botHandler.bearish(it.pathVariable("symbol")) }
 
                 // fixme: comment
             .andRoute(GET("/test/open")) { tradingBot.testOpen() }
