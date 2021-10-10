@@ -39,14 +39,16 @@ class TestTradingBot {
             exchange = "binance",
             symbol = "SOLBTC",
             open_position = orderDocumentReference,
-            position_size = 1.0
+            position_size = 1.0,
+            direction = "SHORT"
         )
 
         val finalLongState = State (
             exchange = "binance",
             symbol = "SOLBTC",
             open_position = orderDocumentReferenceB,
-            position_size = 1.0
+            position_size = 1.0,
+            direction = "LONG"
         )
 
         val bot = TradingBot(

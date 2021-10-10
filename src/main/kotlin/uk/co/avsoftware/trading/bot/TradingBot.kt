@@ -51,7 +51,7 @@ class TradingBot(
                         tradeRepository.saveOrderResponse(orderResponse)
                             .doOnSuccess { logger.info { "Saved new $symbol long order response ref: $it" } }
                             .checkpoint("update state with new open long order")
-                            .flatMap { orderDocReference -> stateRepository.updateState(state.copy(open_position = orderDocReference)) }
+                            .flatMap { orderDocReference -> stateRepository.updateState(state.copy(open_position = orderDocReference, direction = "LONG")) }
                     }
             }
 
@@ -81,7 +81,7 @@ class TradingBot(
                         tradeRepository.saveOrderResponse(orderResponse)
                             .doOnSuccess { logger.info { "Saved new short $symbol order response ref: $it" } }
                             .checkpoint("update state with new open short order")
-                            .flatMap { orderDocReference -> stateRepository.updateState(state.copy(open_position = orderDocReference)) }
+                            .flatMap { orderDocReference -> stateRepository.updateState(state.copy(open_position = orderDocReference, direction = "SHORT")) }
                     }
             }
 
@@ -96,7 +96,7 @@ class TradingBot(
                     // if no trade, get trade is Mono.empty() -> thenReturn always emits 'state'
                     .flatMap { openTrade ->
                         closeAndCompleteOpenTrade(openTrade, state)
-                            .flatMap { stateRepository.updateState(state.copy(open_position = null)) }
+                            .flatMap { stateRepository.updateState(state.copy(open_position = null, direction = "NONE")) }
                             .doOnSuccess { logger.info { "Closed $symbol Open Trade: $it" } }
                             .thenReturn(state)
                     }
@@ -114,7 +114,7 @@ class TradingBot(
                     // if no trade, get trade is Mono.empty() -> thenReturn always emits 'state'
                     .flatMap { openTrade ->
                         closeAndCompleteOpenTrade(openTrade, state)
-                            .flatMap { stateRepository.updateState(state.copy(open_position = null)) }
+                            .flatMap { stateRepository.updateState(state.copy(open_position = null, direction = "NONE")) }
                             .doOnSuccess { logger.info { "Closed Open $symbol Trade: $it" } }
                             .thenReturn(state)
                     }

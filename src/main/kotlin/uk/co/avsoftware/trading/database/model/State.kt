@@ -8,5 +8,6 @@ data class State(
     var symbol: String = "",
     // open position
     var open_position: DocumentReference? = null,
-    var position_size: Double = 1.0
+    var position_size: Double = 1.0,
+    var direction: String = ""
 )

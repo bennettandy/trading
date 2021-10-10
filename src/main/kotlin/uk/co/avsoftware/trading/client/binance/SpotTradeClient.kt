@@ -35,7 +35,7 @@ class DummyTradeClient : TradeClient {
                         price = 10.0,
                         qty = quantity,
                         commission = 0.0023,
-                        commissionAsset = "BTC"
+                        commissionAsset = newOrderRequest.symbol
                     )
                 ),
                 symbol = "SOLBTC",
