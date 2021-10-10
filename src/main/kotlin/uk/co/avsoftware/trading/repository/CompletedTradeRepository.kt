@@ -24,10 +24,10 @@ class CompletedTradeRepository(val completedTradeService: CompletedTradeService)
 
     fun addOpenOrderToCompletedTrade(completedTrade: CompletedTrade, orderResponse: OrderResponse) {
         completedTrade.apply {
-            with (orderResponse){
-                open_commission = fills?.map { orderFill -> orderFill.commission  } ?: emptyList()
-                open_quantity = fills?.map { orderFill -> orderFill.qty  } ?: emptyList()
-                open_price = fills?.map { orderFill -> orderFill.price  } ?: emptyList()
+            with(orderResponse) {
+                open_commission = fills?.map { orderFill -> orderFill.commission } ?: emptyList()
+                open_quantity = fills?.map { orderFill -> orderFill.qty } ?: emptyList()
+                open_price = fills?.map { orderFill -> orderFill.price } ?: emptyList()
                 direction = orderResponse.side?.name ?: "missing"
                 open_commission_currency = fills?.first()?.commissionAsset ?: "unknown"
                 open_order_id = orderResponse.orderId.toString()
@@ -39,9 +39,9 @@ class CompletedTradeRepository(val completedTradeService: CompletedTradeService)
 
     fun addCloseOrderToCompletedTrade(completedTrade: CompletedTrade, orderResponse: OrderResponse) {
         completedTrade.apply {
-            with (orderResponse){
-                close_commission = fills?.map { orderFill -> orderFill.commission  } ?: emptyList()
-                close_quantity = fills?.map { orderFill -> orderFill.qty  } ?: emptyList()
+            with(orderResponse) {
+                close_commission = fills?.map { orderFill -> orderFill.commission } ?: emptyList()
+                close_quantity = fills?.map { orderFill -> orderFill.qty } ?: emptyList()
                 close_price = fills?.map { orderFill -> orderFill.price } ?: emptyList()
                 close_commission_currency = fills?.first()?.commissionAsset ?: "unknown"
                 close_order_id = orderResponse.orderId.toString()
@@ -55,13 +55,17 @@ class CompletedTradeRepository(val completedTradeService: CompletedTradeService)
         completedTrade.apply {
             open_qty = completedTrade.open_quantity.sum()
             open_cost = completedTrade.open_quantity
-                .mapIndexed { index, d -> d*completedTrade.open_price[index]  }.sum()
+                .mapIndexed { index, d -> d * completedTrade.open_price[index] }.sum()
             open_comm = completedTrade.open_commission.sum()
             close_qty = completedTrade.close_quantity.sum()
             close_cost = completedTrade.close_quantity
-                .mapIndexed { index, d -> d*completedTrade.close_price[index]  }.sum()
+                .mapIndexed { index, d -> d * completedTrade.close_price[index] }.sum()
             close_comm = completedTrade.close_commission.sum()
-            price_delta = open_cost - close_cost
+            price_delta = when (direction) {
+                "SELL" -> open_cost - close_cost // sell and buy back cheaper
+                "BUY" -> close_cost - open_cost // buy cheap and sell higher
+                else -> 0.0
+            }
             logger.info { "Calculated Totals: Position: $this" }
         }
     }
