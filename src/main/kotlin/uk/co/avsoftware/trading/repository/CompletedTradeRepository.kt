@@ -68,10 +68,12 @@ class CompletedTradeRepository(val completedTradeService: CompletedTradeService)
                 else -> 0.0
             }
 
+            val percentage = price_delta / open_cost
+
             // populate exchange details
             exchange = state.exchange
             symbol = state.symbol
-            name = "$symbol [$exchange] - $direction"
+            name = "$symbol [$exchange] - $ : ${percentage}%"
 
             logger.info { "Calculated Totals: Position: $this" }
         }

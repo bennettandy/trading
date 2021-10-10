@@ -44,7 +44,7 @@ class TradingBot(
             .doOnSuccess { state -> logger.info { "closed any existing $symbol trade, got state $state" } }
             .checkpoint("place new long trade")
             .flatMap { state ->
-                tradeClient.placeNewOrder(longRequest(state.position_size))
+                tradeClient.placeNewOrder(longRequest(state.position_size, state.symbol))
                     .doOnSuccess { logger.info { "save $symbol long order response" } }
                     .checkpoint("save long order response")
                     .flatMap { orderResponse ->
@@ -74,7 +74,7 @@ class TradingBot(
             .doOnSuccess { state -> logger.info { "closed any existing $symbol trade, got state $state" } }
             .checkpoint("place new short trade")
             .flatMap { state ->
-                tradeClient.placeNewOrder(shortRequest(state.position_size))
+                tradeClient.placeNewOrder(shortRequest(state.position_size, state.symbol))
                     .doOnSuccess { logger.info { "save $symbol short order response" } }
                     .checkpoint("save short order response")
                     .flatMap { orderResponse ->
@@ -145,7 +145,7 @@ class TradingBot(
     }
 
     private fun closeAndCompleteOpenTrade(orderResponse: OrderResponse, state: State): Mono<String> {
-        return Mono.just(reversalTrade(orderResponse))
+        return Mono.just(reversalTrade(orderResponse, state.symbol))
             .flatMap { newOrderRequest ->
             tradeClient.placeNewOrder(newOrderRequest)
                 .checkpoint("place new order to close position")
@@ -163,24 +163,24 @@ class TradingBot(
         }
     }
 
-    private fun reversalTrade(orderResponse: OrderResponse): NewOrderRequest {
+    private fun reversalTrade(orderResponse: OrderResponse, symbol: String): NewOrderRequest {
         return when (orderResponse.side) {
-            OrderSide.SELL -> longRequest(orderResponse.orderQuantity()) // closing a sell order with a corresponding buy
-            else -> shortRequest(orderResponse.orderQuantity()) // else close buy order with a corresponding sell
+            OrderSide.SELL -> longRequest(orderResponse.orderQuantity(), symbol) // closing a sell order with a corresponding buy
+            else -> shortRequest(orderResponse.orderQuantity(), symbol) // else close buy order with a corresponding sell
         }
     }
 
-    private fun longRequest(tradeAmount: Double) =
+    private fun longRequest(tradeAmount: Double, symbol: String) =
         NewOrderRequest(
-            symbol = "SOLBTC",
+            symbol = symbol,
             side = OrderSide.BUY,
             type = OrderType.MARKET,
             quantity = String.format("%.8f", tradeAmount)
         )
 
-    private fun shortRequest(tradeAmount: Double) =
+    private fun shortRequest(tradeAmount: Double, symbol: String) =
         NewOrderRequest(
-            symbol = "SOLBTC",
+            symbol = symbol,
             side = OrderSide.SELL,
             type = OrderType.MARKET,
             quantity = String.format("%.8f", tradeAmount)
