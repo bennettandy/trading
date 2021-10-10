@@ -10,7 +10,7 @@ class BotHandler( val tradingBot: TradingBot ) {
 
     private val logger = KotlinLogging.logger {}
 
-    fun longTrigger(): Mono<ServerResponse> = tradingBot.longTrigger()
+    fun longTrigger(symbol: String): Mono<ServerResponse> = tradingBot.longTrigger(symbol)
         .checkpoint("Long Trigger")
         .flatMap { ServerResponse.ok().build() }
         .onErrorResume {
@@ -18,7 +18,7 @@ class BotHandler( val tradingBot: TradingBot ) {
             ServerResponse.notFound().build()
         }
 
-    fun shortTrigger(): Mono<ServerResponse> = tradingBot.shortTrigger()
+    fun shortTrigger(symbol: String): Mono<ServerResponse> = tradingBot.shortTrigger(symbol)
         .checkpoint("Short Trigger")
         .flatMap { ServerResponse.ok().build() }
         .onErrorResume {
@@ -26,7 +26,7 @@ class BotHandler( val tradingBot: TradingBot ) {
             ServerResponse.notFound().build()
         }
 
-    fun shortTakeProfit(): Mono<ServerResponse> = tradingBot.shortTakeProfit()
+    fun shortTakeProfit(symbol: String): Mono<ServerResponse> = tradingBot.shortTakeProfit(symbol)
         .checkpoint("Short Take Profit")
         .flatMap { ServerResponse.ok().build() }
         .onErrorResume {
@@ -34,7 +34,7 @@ class BotHandler( val tradingBot: TradingBot ) {
             ServerResponse.notFound().build()
         }
 
-    fun longTakeProfit(): Mono<ServerResponse> = tradingBot.longTakeProfit()
+    fun longTakeProfit(symbol: String): Mono<ServerResponse> = tradingBot.longTakeProfit(symbol)
         .checkpoint("Long Take Profit")
         .flatMap { ServerResponse.ok().build() }
         .onErrorResume {
@@ -42,6 +42,6 @@ class BotHandler( val tradingBot: TradingBot ) {
             ServerResponse.notFound().build()
         }
 
-    fun bullish(): Mono<ServerResponse> = longTrigger()
-    fun bearish(): Mono<ServerResponse> = shortTrigger()
+    fun bullish(symbol: String): Mono<ServerResponse> = tradingBot.bullish(symbol)
+    fun bearish(symbol: String): Mono<ServerResponse> = tradingBot.bearish(symbol)
 }
