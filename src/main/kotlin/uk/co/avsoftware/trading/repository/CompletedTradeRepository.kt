@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 import uk.co.avsoftware.trading.client.binance.model.trade.OrderResponse
 import uk.co.avsoftware.trading.database.model.CompletedTrade
+import uk.co.avsoftware.trading.database.model.State
 import uk.co.avsoftware.trading.repository.service.CompletedTradeService
 
 @Service
@@ -12,12 +13,12 @@ class CompletedTradeRepository(val completedTradeService: CompletedTradeService)
 
     private val logger = KotlinLogging.logger {}
 
-    fun createCompletedTrade(openingOrder: OrderResponse, closingOrder: OrderResponse): Mono<String> {
+    fun createCompletedTrade(openingOrder: OrderResponse, closingOrder: OrderResponse, state: State): Mono<String> {
         // todo: simplify this
         val completedTrade = CompletedTrade()
         addOpenOrderToCompletedTrade(completedTrade, openingOrder)
         addCloseOrderToCompletedTrade(completedTrade, closingOrder)
-        calculateProfits(completedTrade)
+        calculateProfits(completedTrade, state)
         return completedTradeService.saveNewCompletedTrade(completedTrade)
     }
 
@@ -51,7 +52,7 @@ class CompletedTradeRepository(val completedTradeService: CompletedTradeService)
         }
     }
 
-    private fun calculateProfits(completedTrade: CompletedTrade) {
+    private fun calculateProfits(completedTrade: CompletedTrade, state: State) {
         completedTrade.apply {
             open_qty = completedTrade.open_quantity.sum()
             open_cost = completedTrade.open_quantity
@@ -66,6 +67,12 @@ class CompletedTradeRepository(val completedTradeService: CompletedTradeService)
                 "BUY" -> close_cost - open_cost // buy cheap and sell higher
                 else -> 0.0
             }
+
+            // populate exchange details
+            exchange = state.exchange
+            symbol = state.symbol
+            name = "$symbol [$exchange] - $direction"
+
             logger.info { "Calculated Totals: Position: $this" }
         }
     }

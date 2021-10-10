@@ -66,7 +66,7 @@ class TestTradingBot {
         every { tradeRepository.saveOrderResponse(openSellResponse)} returns Mono.just(orderDocumentReference)
         every { tradeRepository.saveOrderResponse(buyOrderResponseA)}
         every { tradeRepository.saveOrderResponse(buyOrderResponseA)} returns Mono.just(orderDocumentReferenceA)
-        every { completedTradeRepository.createCompletedTrade(openSellResponse, buyOrderResponseA)} returns Mono.just("doc-id-string")
+        every { completedTradeRepository.createCompletedTrade(openSellResponse, buyOrderResponseA, initialShortState)} returns Mono.just("doc-id-string")
 
         // open new long
         every { tradeRepository.saveOrderResponse(buyOrderResponseB)} returns Mono.just(orderDocumentReferenceB)
@@ -89,7 +89,7 @@ class TestTradingBot {
         // save new long trade
         verify(exactly = 1) { tradeRepository.saveOrderResponse(buyOrderResponseB) }
         // completed trade repository, close short position
-        verify(exactly = 1) { completedTradeRepository.createCompletedTrade(openSellResponse, buyOrderResponseA) }
+        verify(exactly = 1) { completedTradeRepository.createCompletedTrade(openSellResponse, buyOrderResponseA, initialShortState) }
         // finally, update state with new long position
         verify(exactly = 1) { stateRepository.updateState(finalLongState) }
     }

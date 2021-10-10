@@ -36,7 +36,7 @@ class TradingBot(
                         stateRepository.getTrade(state)
                             .checkpoint("close any open trade")
                             // if no trade, get trade is Mono.empty() -> thenReturn always emits 'state'
-                            .flatMap { openTrade -> closeAndCompleteOpenTrade(openTrade) }
+                            .flatMap { openTrade -> closeAndCompleteOpenTrade(openTrade, state) }
                             .thenReturn(state)
                     }
             }
@@ -67,7 +67,7 @@ class TradingBot(
                         stateRepository.getTrade(state)
                             .checkpoint("close any open trade")
                             // if no trade, get trade is Mono.empty() -> thenReturn always emits 'state'
-                            .flatMap { openTrade -> closeAndCompleteOpenTrade(openTrade) }
+                            .flatMap { openTrade -> closeAndCompleteOpenTrade(openTrade, state) }
                             .thenReturn(state)
                     }
             }
@@ -95,7 +95,7 @@ class TradingBot(
                     .checkpoint("close any open trade")
                     // if no trade, get trade is Mono.empty() -> thenReturn always emits 'state'
                     .flatMap { openTrade ->
-                        closeAndCompleteOpenTrade(openTrade)
+                        closeAndCompleteOpenTrade(openTrade, state)
                             .flatMap { stateRepository.updateState(state.copy(open_position = null)) }
                             .doOnSuccess { logger.info { "Closed Open Trade: $it" } }
                             .thenReturn(state)
@@ -113,7 +113,7 @@ class TradingBot(
                     .checkpoint("close any open trade")
                     // if no trade, get trade is Mono.empty() -> thenReturn always emits 'state'
                     .flatMap { openTrade ->
-                        closeAndCompleteOpenTrade(openTrade)
+                        closeAndCompleteOpenTrade(openTrade, state)
                             .flatMap { stateRepository.updateState(state.copy(open_position = null)) }
                             .doOnSuccess { logger.info { "Closed Open Trade: $it" } }
                             .thenReturn(state)
@@ -144,7 +144,7 @@ class TradingBot(
         return ServerResponse.ok().build()
     }
 
-    private fun closeAndCompleteOpenTrade(orderResponse: OrderResponse): Mono<String> {
+    private fun closeAndCompleteOpenTrade(orderResponse: OrderResponse, state: State): Mono<String> {
         return Mono.just(reversalTrade(orderResponse))
             .flatMap { newOrderRequest ->
             tradeClient.placeNewOrder(newOrderRequest)
@@ -155,7 +155,7 @@ class TradingBot(
                         .checkpoint("saved closing trade to DB")
                         .doOnSuccess { logger.info { "saved closing trade to DB $it" } }
                         .flatMap {
-                            completedTradeRepository.createCompletedTrade(orderResponse, closeOrderResponse)
+                            completedTradeRepository.createCompletedTrade(orderResponse, closeOrderResponse, state)
                                 .checkpoint("crete Completed Trade document")
                         }
                         .doOnSuccess { logger.info { "Saved Completed Trade to DB" } }
