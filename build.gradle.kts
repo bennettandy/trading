@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "uk.co.avsoftware"
-version = "0.0.5"
+version = "0.0.6"
 java.sourceCompatibility = JavaVersion.VERSION_11
 
 repositories {

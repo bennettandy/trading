@@ -73,17 +73,18 @@ class TradingBot(
             }
             .doOnSuccess { state -> logger.info { "closed any existing $symbol trade, got state $state" } }
             .checkpoint("place new short trade")
-            .flatMap { state ->
-                tradeClient.placeNewOrder(shortRequest(state.position_size, state.symbol))
-                    .doOnSuccess { logger.info { "save $symbol short order response" } }
-                    .checkpoint("save short order response")
-                    .flatMap { orderResponse ->
-                        tradeRepository.saveOrderResponse(orderResponse)
-                            .doOnSuccess { logger.info { "Saved new short $symbol order response ref: $it" } }
-                            .checkpoint("update state with new open short order")
-                            .flatMap { orderDocReference -> stateRepository.updateState(state.copy(open_position = orderDocReference, direction = "SHORT")) }
-                    }
-            }
+            .flatMap { state -> stateRepository.updateState(state.copy(open_position = null, direction = "SHORT")) }
+//            .flatMap { state ->
+//                tradeClient.placeNewOrder(shortRequest(state.position_size, state.symbol))
+//                    .doOnSuccess { logger.info { "save $symbol short order response" } }
+//                    .checkpoint("save short order response")
+//                    .flatMap { orderResponse ->
+//                        tradeRepository.saveOrderResponse(orderResponse)
+//                            .doOnSuccess { logger.info { "Saved new short $symbol order response ref: $it" } }
+//                            .checkpoint("update state with new open short order")
+//                            .flatMap { orderDocReference -> stateRepository.updateState(state.copy(open_position = orderDocReference, direction = "SHORT")) }
+//                    }
+//            }
 
 
     fun longTakeProfit(symbol: String): Mono<State> =
