@@ -9,6 +9,7 @@ import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 import uk.co.avsoftware.trading.TestDataHelper
 import uk.co.avsoftware.trading.client.binance.TradeClient
+import uk.co.avsoftware.trading.client.binance.model.trade.BotDirection
 import uk.co.avsoftware.trading.client.binance.model.trade.OrderSide
 import uk.co.avsoftware.trading.client.binance.model.trade.OrderResponse
 import uk.co.avsoftware.trading.database.model.State
@@ -40,7 +41,7 @@ class TestTradingBot {
             symbol = "SOLBTC",
             open_position = orderDocumentReference,
             position_size = 1.0,
-            direction = "SHORT"
+            direction = BotDirection.SHORT
         )
 
         val finalLongState = State (
@@ -48,7 +49,7 @@ class TestTradingBot {
             symbol = "SOLBTC",
             open_position = orderDocumentReferenceB,
             position_size = 1.0,
-            direction = "LONG"
+            direction = BotDirection.LONG
         )
 
         val bot = TradingBot(
