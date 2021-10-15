@@ -9,5 +9,7 @@ data class State(
     // open position
     var open_position: DocumentReference? = null,
     var position_size: Double = 1.0,
+    var remaining_position: Double = 0.0,
+    var last_event: SignalEvent = SignalEvent.NONE,
     var direction: String = ""
 )

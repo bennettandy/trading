@@ -10,6 +10,7 @@ import uk.co.avsoftware.trading.client.binance.model.trade.OrderType
 import uk.co.avsoftware.trading.client.binance.model.trade.NewOrderRequest
 import uk.co.avsoftware.trading.client.binance.model.trade.OrderResponse
 import uk.co.avsoftware.trading.client.binance.model.trade.orderQuantity
+import uk.co.avsoftware.trading.database.model.SignalEvent
 import uk.co.avsoftware.trading.database.model.State
 import uk.co.avsoftware.trading.repository.CompletedTradeRepository
 import uk.co.avsoftware.trading.repository.StateRepository
@@ -26,12 +27,12 @@ class TradingBot(
     private val logger = KotlinLogging.logger {}
 
     fun longTrigger(symbol: String): Mono<State> =
-        stateRepository.getState(symbol)
+        stateRepository.updateStateWithEvent(symbol, SignalEvent.LONG)
             .checkpoint("get state")
             .doOnSuccess { logger.info("LONG TRIGGER $symbol : State $it") }
             .flatMap {
                 filterAlreadyLong(it)
-                    .doOnSuccess { logger.info { "passed filter $symbol already long $it" } }
+                    .doOnSuccess { logger.info { "passed filter $symbol NOT already long $it" } }
                     .flatMap { state ->
                         stateRepository.getTrade(state)
                             .checkpoint("close any open $symbol trade")
@@ -57,12 +58,12 @@ class TradingBot(
 
 
     fun shortTrigger(symbol: String): Mono<State> =
-        stateRepository.getState(symbol)
+        stateRepository.updateStateWithEvent(symbol, SignalEvent.SHORT)
             .checkpoint("get state")
             .doOnSuccess { logger.info("SHORT TRIGGER $symbol : State $it") }
             .flatMap {
                 filterAlreadyShort(it)
-                    .doOnSuccess { logger.info("Passed $symbol already short : State $it") }
+                    .doOnSuccess { logger.info("Passed $symbol NOT already short : State $it") }
                     .flatMap { state ->
                         stateRepository.getTrade(state)
                             .checkpoint("close any open trade")
@@ -72,7 +73,7 @@ class TradingBot(
                     }
             }
             .doOnSuccess { state -> logger.info { "closed any existing $symbol trade, got state $state" } }
-            .checkpoint("place new short trade")
+            //.checkpoint("place new short trade")
             .flatMap { state -> stateRepository.updateState(state.copy(open_position = null, direction = "SHORT")) }
 //            .flatMap { state ->
 //                tradeClient.placeNewOrder(shortRequest(state.position_size, state.symbol))
@@ -88,7 +89,7 @@ class TradingBot(
 
 
     fun longTakeProfit(symbol: String): Mono<State> =
-        stateRepository.getState(symbol)
+        stateRepository.updateStateWithEvent(symbol, SignalEvent.LONG_TP)
             .checkpoint("get state")
             .doOnSuccess { logger.info("LONG TAKE PROFIT $symbol : State $it") }
             .flatMap { state ->
@@ -106,7 +107,7 @@ class TradingBot(
 
     // fixme: identical to longTakeProfit
     fun shortTakeProfit(symbol: String): Mono<State> =
-        stateRepository.getState(symbol)
+        stateRepository.updateStateWithEvent(symbol, SignalEvent.SHORT_TP)
             .checkpoint("get state")
             .doOnSuccess { logger.info("SHORT TAKE PROFIT $symbol : State $it") }
             .flatMap { state ->
@@ -125,12 +126,14 @@ class TradingBot(
 
     fun bullish(symbol: String): Mono<ServerResponse> {
         logger.info("BULLISH $symbol")
-        return ServerResponse.ok().build()
+        return stateRepository.updateStateWithEvent(symbol, SignalEvent.BULLISH)
+            .flatMap { ServerResponse.ok().build() }
     }
 
     fun bearish(symbol: String): Mono<ServerResponse> {
         logger.info("BEARISH $symbol")
-        return ServerResponse.ok().build()
+        return stateRepository.updateStateWithEvent(symbol, SignalEvent.BEARISH)
+        .flatMap { ServerResponse.ok().build() }
     }
 
     fun test(): Mono<ServerResponse> {
