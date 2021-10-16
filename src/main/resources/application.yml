@@ -11,12 +11,6 @@ api:
     key: "${sm://binance-api-key}"
     secret: "${sm://binance-api-secret}"
 
-  bybit:
-    description: "bybit exchange api credentials"
-    uri: "https://api.bybit.com"
-    key: "${sm://bybit-api-key}"
-    secret: "${sm://bybit-api-secret}"
-
 ---
 
 spring:
@@ -45,3 +39,10 @@ spring:
 firebase:
   service-account: "${sm://firebase-service-account}"
   project-id: "trading-326621"
+
+api:
+  bybit:
+    description: "bybit exchange api credentials"
+    uri: "https://api.bybit.com"
+    key: "${sm://bybit-api-key}"
+    secret: "${sm://bybit-api-secret}"

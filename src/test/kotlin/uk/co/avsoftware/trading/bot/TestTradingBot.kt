@@ -12,6 +12,7 @@ import uk.co.avsoftware.trading.TestDataHelper
 import uk.co.avsoftware.trading.client.binance.BinanceTradeClient
 import uk.co.avsoftware.trading.client.binance.model.OrderSide
 import uk.co.avsoftware.trading.client.binance.model.OrderResponse
+import uk.co.avsoftware.trading.client.bybit.BybitTradeClient
 import uk.co.avsoftware.trading.database.model.Direction
 import uk.co.avsoftware.trading.database.model.SignalEvent
 import uk.co.avsoftware.trading.database.model.State
@@ -25,6 +26,7 @@ class TestTradingBot {
     private val stateRepository: StateRepository = mockk()
     private val tradeRepository: TradeRepository = mockk()
     private val tradeClient: BinanceTradeClient = mockk()
+    private val bybitClient: BybitTradeClient = mockk()
 
     @Test
     fun testSimpleLongStrategy(){
@@ -72,6 +74,7 @@ class TestTradingBot {
 
         val bot = TradingBot(
             binanceTradeClient = tradeClient,
+            bybitTradeClient = bybitClient,
             completedTradeRepository = completedTradeRepository,
             stateRepository = stateRepository,
             tradeRepository = tradeRepository
@@ -151,6 +154,7 @@ class TestTradingBot {
 
         val bot = TradingBot(
             binanceTradeClient = tradeClient,
+            bybitTradeClient = bybitClient,
             completedTradeRepository = completedTradeRepository,
             stateRepository = stateRepository,
             tradeRepository = tradeRepository

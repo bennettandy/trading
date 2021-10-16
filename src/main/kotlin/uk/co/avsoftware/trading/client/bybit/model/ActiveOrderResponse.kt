@@ -2,10 +2,10 @@ package uk.co.avsoftware.trading.client.bybit.model
 
 data class ActiveOrderResponse(
     var ret_code: Int = 0,
-    var ret_message: String = "",
+    var ret_msg: String = "",
     var ext_code: String? = null,
     var ext_info: String? = null,
-    var result: ActiveOrderResult
+    var result: ActiveOrderResult?
 )
 
 data class ActiveOrderResult(
@@ -20,16 +20,16 @@ data class ActiveOrderResult(
     var executedQty: String = "",
     var status: String = "",
     var timeInForce: String = "",
-    var type: OrderType = OrderType.Limit,
-    var side: OrderSide = OrderSide.Buy
+    var type: OrderType = OrderType.LIMIT,
+    var side: OrderSide = OrderSide.BUY
 )
 
 enum class OrderType {
-    Limit, Market
+    LIMIT, MARKET
 }
 
 enum class OrderSide {
-    Buy, Sell
+    BUY, SELL
 }
 /*
 {

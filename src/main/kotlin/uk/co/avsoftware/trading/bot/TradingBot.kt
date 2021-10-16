@@ -108,7 +108,12 @@ class TradingBot(
     }
 
     fun testOpen(): Mono<ServerResponse> {
-        return ServerResponse.ok().build()
+        return bybitTradeClient.placeOrder("ETHUSDT",
+            uk.co.avsoftware.trading.client.bybit.model.OrderSide.BUY,
+            quantity = 150.0
+        )
+            .doOnSuccess{ logger.info { "RESULT: $it" }}
+            .flatMap { ServerResponse.ok().build() }
     }
 
     fun testClose(): Mono<ServerResponse> {

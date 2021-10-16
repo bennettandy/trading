@@ -1,6 +1,8 @@
 package uk.co.avsoftware.trading.client.bybit.model
 
 import uk.co.avsoftware.trading.client.binance.model.TimeInForce
+import java.time.Instant
+import java.util.*
 
 
 data class ActiveOrderRequest(
@@ -12,17 +14,18 @@ data class ActiveOrderRequest(
     val type: OrderType,
     val timeInForce: TimeInForce = TimeInForce.GTC,
     val timestamp: Long
-) : BybitRequest() {
+) {
 
-    override fun getQueryString(apiKey: String): String =
-        StringBuilder(baseQueryString(apiKey)).apply {
-            append("&symbol=${symbol}")
-            append("&qty=${quantity}")
-            append("&price=${price}")
-            append("&type=${type}")
-            append("&time_in_force=${timeInForce}")
-            append("&timestamp=${timestamp}")
-
-        }.toString()
-
+    fun getQueryParameters(apiKey: String): TreeMap<String, String> =
+        TreeMap<String, String>().apply {
+            put("api_key", apiKey)
+            put("recv_window", "5000")
+            put("timestamp", System.currentTimeMillis().toString())
+            put("symbol", symbol)
+            price?.let { put("price", "$it") }
+            put("qty", "$quantity")
+            put("type", type.name)
+            put("side", side.name)
+            put("time_in_force", timeInForce.name)
+        }
 }

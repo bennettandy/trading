@@ -9,7 +9,9 @@ import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import uk.co.avsoftware.trading.client.binance.model.BinanceError
 import uk.co.avsoftware.trading.client.binance.sign.BybitSigner
+import uk.co.avsoftware.trading.client.bybit.config.BybitConfigProperties
 import uk.co.avsoftware.trading.client.bybit.model.*
+import uk.co.avsoftware.trading.client.bybit.sign.Encryption
 import java.io.IOException
 import java.time.Instant
 import javax.annotation.PostConstruct
@@ -17,30 +19,32 @@ import javax.annotation.PostConstruct
 @Component
 class BybitTradeClient(
     @Qualifier("bybitApiClient") val bybitClient: WebClient,
-    val bybitSigner: BybitSigner,
+    val encryption: Encryption,
+    val bybitConfigProperties: BybitConfigProperties
     ) {
 
     private val logger = KotlinLogging.logger {}
 
     fun placeOrder( symbol: String, side: OrderSide, quantity: Double): Mono<ActiveOrderResponse> =
-        with (bybitSigner){
+        with (encryption){
             val order = ActiveOrderRequest(
                 symbol = symbol,
                 side = side,
                 quantity = quantity,
                 timestamp = Instant.now().toEpochMilli(),
-                type = OrderType.Market
+                type = OrderType.MARKET
             )
-            val queryString = signQueryString(order.getQueryString(getApiKey()))
+            val queryString = genQueryString(order.getQueryParameters(bybitConfigProperties.key), bybitConfigProperties.secret )
 
-            logger.debug {"PLACE ORDER $queryString" }
+            val uri = "/spot/v1/order?${queryString}"
+            logger.debug {"PLACE ORDER $uri" }
 
-            bybitClient.post().uri("/spot/v1/order?${queryString}")
-                .accept(MediaType.APPLICATION_JSON)
+            bybitClient.post().uri(uri)
+                .accept(MediaType.ALL)
                 .retrieve()
                 .onStatus(
                     { it== HttpStatus.BAD_REQUEST },
-                    { response -> response.bodyToMono(BinanceError::class.java).map { error -> IOException(error) } }
+                    { response -> response.bodyToMono(BybitError::class.java).map { error -> IOException(error) } }
                 )
                 .onStatus({ it.is5xxServerError }, { Mono.error( RuntimeException("Server is not responding"))})
                 .bodyToMono(ActiveOrderResponse::class.java)
