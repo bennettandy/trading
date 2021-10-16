@@ -1,8 +1,8 @@
 package uk.co.avsoftware.trading
 
-import uk.co.avsoftware.trading.client.binance.model.trade.OrderSide
-import uk.co.avsoftware.trading.client.binance.model.trade.OrderFill
-import uk.co.avsoftware.trading.client.binance.model.trade.OrderResponse
+import uk.co.avsoftware.trading.client.binance.model.OrderSide
+import uk.co.avsoftware.trading.client.binance.model.OrderFill
+import uk.co.avsoftware.trading.client.binance.model.OrderResponse
 
 object TestDataHelper {
     fun createOrderResponse(orderSide: OrderSide, clientOrderId: String): OrderResponse {

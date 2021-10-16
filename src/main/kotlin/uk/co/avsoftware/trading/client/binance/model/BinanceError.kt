@@ -1,4 +1,4 @@
-package uk.co.avsoftware.trading.client.binance.model.trade
+package uk.co.avsoftware.trading.client.binance.model
 
 data class BinanceError(
     val code: Int,

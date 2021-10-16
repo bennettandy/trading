@@ -11,5 +11,6 @@ data class State(
     var position_size: Double = 1.0,
     var remaining_position: Double = 0.0,
     var last_event: SignalEvent = SignalEvent.NONE,
-    var direction: String = ""
+    var direction: Direction = Direction.NONE,
+    var timestamp: Long = 0L
 )

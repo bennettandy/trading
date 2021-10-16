@@ -8,11 +8,11 @@ import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
-import uk.co.avsoftware.trading.client.binance.model.trade.OrderSide
-import uk.co.avsoftware.trading.client.binance.model.trade.NewOrderRequest
-import uk.co.avsoftware.trading.client.binance.model.trade.BinanceError
-import uk.co.avsoftware.trading.client.binance.model.trade.OrderFill
-import uk.co.avsoftware.trading.client.binance.model.trade.OrderResponse
+import uk.co.avsoftware.trading.client.binance.model.OrderSide
+import uk.co.avsoftware.trading.client.binance.model.NewOrderRequest
+import uk.co.avsoftware.trading.client.binance.model.BinanceError
+import uk.co.avsoftware.trading.client.binance.model.OrderFill
+import uk.co.avsoftware.trading.client.binance.model.OrderResponse
 import uk.co.avsoftware.trading.client.binance.sign.BinanceSigner
 import java.io.IOException
 import javax.annotation.PostConstruct
@@ -56,9 +56,8 @@ class DummyTradeClient : TradeClient {
 @Profile("production")
 class SpotTradeClient(
     @Qualifier("binanceApiClient") val binanceWebClient: WebClient,
-    val binanceSigner: BinanceSigner,
-    @Qualifier("bybitApiClient") val bybitWebClient: WebClient
-): TradeClient {
+    val binanceSigner: BinanceSigner
+    ): TradeClient {
 
     private val logger = KotlinLogging.logger {}
 

@@ -10,6 +10,7 @@ api:
     uri: "https://api.binance.com"
     key: "${sm://binance-api-key}"
     secret: "${sm://binance-api-secret}"
+
   bybit:
     description: "bybit exchange api credentials"
     uri: "https://api.bybit.com"
@@ -19,7 +20,9 @@ api:
 ---
 
 spring:
-  profiles: "test"
+  config:
+    activate:
+      on-profile: "test"
 
 firebase:
   service-account: "${sm://staging-firebase-service-account}"
@@ -27,15 +30,17 @@ firebase:
 
 api:
   bybit:
-    description: "bybit exchange test-net api credentials"
+    description: "TEST NET bybit exchange test-net api credentials"
     uri: "https://api-testnet.bybit.com"
-    key: "${sm://bybit-api-key}"
-    secret: "${sm://bybit-api-secret}"
+    key: "${sm://bybit-testnet-api-key}"
+    secret: "${sm://bybit-testnet-api-secret}"
 
 ---
 
 spring:
-  profiles: "production"
+  config:
+    activate:
+      on-profile: "production"
 
 firebase:
   service-account: "${sm://firebase-service-account}"

@@ -4,13 +4,16 @@ import com.google.cloud.firestore.DocumentReference
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import org.junit.Ignore
 import org.junit.jupiter.api.Test
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 import uk.co.avsoftware.trading.TestDataHelper
 import uk.co.avsoftware.trading.client.binance.TradeClient
-import uk.co.avsoftware.trading.client.binance.model.trade.OrderSide
-import uk.co.avsoftware.trading.client.binance.model.trade.OrderResponse
+import uk.co.avsoftware.trading.client.binance.model.OrderSide
+import uk.co.avsoftware.trading.client.binance.model.OrderResponse
+import uk.co.avsoftware.trading.database.model.Direction
+import uk.co.avsoftware.trading.database.model.SignalEvent
 import uk.co.avsoftware.trading.database.model.State
 import uk.co.avsoftware.trading.repository.CompletedTradeRepository
 import uk.co.avsoftware.trading.repository.StateRepository
@@ -23,8 +26,99 @@ class TestTradingBot {
     private val tradeRepository: TradeRepository = mockk()
     private val tradeClient: TradeClient = mockk()
 
+    @Test
+    fun testSimpleLongStrategy(){
+
+        val orderDocumentReference: DocumentReference = mockk()
+        val orderDocumentReferenceA: DocumentReference = mockk()
+        val orderDocumentReferenceB: DocumentReference = mockk()
+
+        val openSellResponse: OrderResponse = TestDataHelper.createOrderResponse(OrderSide.SELL, "shortA")
+        val buyOrderResponseA: OrderResponse = TestDataHelper.createOrderResponse(OrderSide.BUY, "orderA")
+        val buyOrderResponseB: OrderResponse = TestDataHelper.createOrderResponse(OrderSide.BUY, "orderB")
+
+        val initialClosedState = State (
+            exchange = "binance",
+            symbol = "SOLBTC",
+            open_position = null,
+            position_size = 5.0,
+            remaining_position = 0.0,
+            direction = Direction.NONE,
+            timestamp = 0L,
+            last_event = SignalEvent.NONE
+        )
+
+        val eventUpdatedState = State (
+            exchange = "binance",
+            symbol = "SOLBTC",
+            open_position = null,
+            position_size = 5.0,
+            remaining_position = 0.0,
+            direction = Direction.NONE,
+            timestamp = 0L,
+            last_event = SignalEvent.LONG
+        )
+
+        val finalLongState = State (
+            exchange = "binance",
+            symbol = "SOLBTC",
+            open_position = orderDocumentReferenceB,
+            position_size = 5.0,
+            remaining_position = 5.0,
+            direction = Direction.LONG,
+            timestamp = 0L,
+            last_event = SignalEvent.LONG
+        )
+
+        val bot = TradingBot(
+            tradeClient = tradeClient,
+            completedTradeRepository = completedTradeRepository,
+            stateRepository = stateRepository,
+            tradeRepository = tradeRepository
+        )
+
+        // update state with event
+        every { stateRepository.updateStateWithEvent("SOLBTC", SignalEvent.LONG)} returns Mono.just(eventUpdatedState)
+
+        // close short and complete trade orders
+        every { tradeClient.placeNewOrder(any())} returns Mono.just(buyOrderResponseA) andThen Mono.just(buyOrderResponseB)
+
+        // initial state
+        every { stateRepository.getState("SOLBTC") } returns Mono.just(initialClosedState)
+
+        every { tradeRepository.saveOrderResponse(openSellResponse)} returns Mono.just(orderDocumentReference)
+        every { tradeRepository.saveOrderResponse(buyOrderResponseA)}
+        every { tradeRepository.saveOrderResponse(buyOrderResponseA)} returns Mono.just(orderDocumentReferenceA)
+        every { completedTradeRepository.createCompletedTrade(openSellResponse, buyOrderResponseA, initialClosedState)} returns Mono.just("doc-id-string")
+
+        // open new long
+        every { tradeRepository.saveOrderResponse(buyOrderResponseB)} returns Mono.just(orderDocumentReferenceB)
+        every { stateRepository.updateState(finalLongState)} returns Mono.just(finalLongState)
+
+        val botSrc: Mono<State> = bot.longTrigger("SOLBTC")
+
+        StepVerifier
+            .create(botSrc)
+            .expectNext(finalLongState)
+            .expectComplete()
+            .verify()
+
+        // initial get state
+        verify(exactly = 1) { stateRepository.getState("SOLBTC") }
+        // closing shot and opening long - 2x long trades
+        verify(exactly = 2) { tradeClient.placeNewOrder(any()) }
+        // save short closing long trade
+        verify(exactly = 1) { tradeRepository.saveOrderResponse(buyOrderResponseA) }
+        // save new long trade
+        verify(exactly = 1) { tradeRepository.saveOrderResponse(buyOrderResponseB) }
+        // completed trade repository, close short position
+        verify(exactly = 1) { completedTradeRepository.createCompletedTrade(openSellResponse, buyOrderResponseA, initialClosedState) }
+        // finally, update state with new long position
+        verify(exactly = 1) { stateRepository.updateState(finalLongState) }
+    }
 
     @Test
+    @Ignore
     fun testTradingBotLongTriggerWithOpenShortPosition(){
 
         val orderDocumentReference: DocumentReference = mockk()
@@ -40,7 +134,9 @@ class TestTradingBot {
             symbol = "SOLBTC",
             open_position = orderDocumentReference,
             position_size = 1.0,
-            direction = "SHORT"
+            remaining_position = 1.0,
+            direction = Direction.SHORT,
+            timestamp = 0L
         )
 
         val finalLongState = State (
@@ -48,7 +144,9 @@ class TestTradingBot {
             symbol = "SOLBTC",
             open_position = orderDocumentReferenceB,
             position_size = 1.0,
-            direction = "LONG"
+            remaining_position = 1.0,
+            direction = Direction.LONG,
+            timestamp = 0L
         )
 
         val bot = TradingBot(

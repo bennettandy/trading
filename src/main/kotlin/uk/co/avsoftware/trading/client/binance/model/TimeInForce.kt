@@ -1,4 +1,4 @@
-package uk.co.avsoftware.trading.client.binance.model.trade
+package uk.co.avsoftware.trading.client.binance.model
 
 enum class TimeInForce {
     GTC, // Good 'till cancel orders will stay active until they are filled or canceled

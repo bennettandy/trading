@@ -1,4 +1,4 @@
-package uk.co.avsoftware.trading.client.binance.model.trade
+package uk.co.avsoftware.trading.client.binance.model
 
 enum class OrderType {
     MARKET, // Market order will be placed without a price. The order will be executed at the best price available at that time in the order book.

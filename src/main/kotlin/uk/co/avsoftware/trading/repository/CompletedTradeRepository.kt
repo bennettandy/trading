@@ -3,7 +3,7 @@ package uk.co.avsoftware.trading.repository
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
-import uk.co.avsoftware.trading.client.binance.model.trade.OrderResponse
+import uk.co.avsoftware.trading.client.binance.model.OrderResponse
 import uk.co.avsoftware.trading.database.model.CompletedTrade
 import uk.co.avsoftware.trading.database.model.State
 import uk.co.avsoftware.trading.repository.service.CompletedTradeService

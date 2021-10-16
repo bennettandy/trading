@@ -1,13 +1,15 @@
-package uk.co.avsoftware.trading.client.binance.sign
+package uk.co.avsoftware.trading.client.bybit.sign
 
 import org.springframework.stereotype.Component
 import uk.co.avsoftware.trading.client.binance.config.BinanceConfigProperties
+import uk.co.avsoftware.trading.client.binance.sign.BybitSigner
+import uk.co.avsoftware.trading.client.bybit.config.BybitConfigProperties
 import java.time.Clock
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
 @Component
-class BinanceSignature( val binanceConfigProperties: BinanceConfigProperties ) : BinanceSigner {
+class BybitSignature(val binanceConfigProperties: BinanceConfigProperties ) : BybitSigner {
     fun ByteArray.toHex(): String = joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
 
     fun getSignature(data: String, key: String): String {
@@ -25,7 +27,7 @@ class BinanceSignature( val binanceConfigProperties: BinanceConfigProperties ) :
     override fun getApiKey(): String = binanceConfigProperties.key
 
     override fun signQueryString(queryString: String): String =
-        "${queryString}&signature=${sign(queryString)}"
+        "${queryString}&sign=${sign(queryString)}"
 
     private fun sign(message: String): String = getSignature(message, binanceConfigProperties.secret)
 

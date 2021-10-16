@@ -1,4 +1,4 @@
-package uk.co.avsoftware.trading.api.config
+package uk.co.avsoftware.trading.client.binance.config
 
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier

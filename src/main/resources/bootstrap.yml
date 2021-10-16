@@ -13,22 +13,3 @@ logging:
     root: INFO
     com.google: INFO
     uk.co.avsoftware: DEBUG
-
----
-
-spring:
-  profiles: "production"
-
-  cloud:
-    gcp:
-      secretmanager:
-        enabled: true
-
----
-
-spring:
-  profiles: "test"
-  cloud:
-    gcp:
-      secretmanager:
-        enabled: true

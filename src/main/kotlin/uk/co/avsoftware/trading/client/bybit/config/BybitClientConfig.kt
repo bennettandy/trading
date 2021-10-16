@@ -1,10 +1,11 @@
-package uk.co.avsoftware.trading.api.config
+package uk.co.avsoftware.trading.client.bybit.config
 
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.reactive.function.client.WebClient
+import uk.co.avsoftware.trading.client.binance.config.BinanceConfigProperties
 import javax.annotation.PostConstruct
 
 @Configuration
