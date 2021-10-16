@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 import uk.co.avsoftware.trading.TestDataHelper
-import uk.co.avsoftware.trading.client.binance.TradeClient
+import uk.co.avsoftware.trading.client.binance.BinanceTradeClient
 import uk.co.avsoftware.trading.client.binance.model.OrderSide
 import uk.co.avsoftware.trading.client.binance.model.OrderResponse
 import uk.co.avsoftware.trading.database.model.Direction
@@ -24,7 +24,7 @@ class TestTradingBot {
     private val completedTradeRepository: CompletedTradeRepository = mockk()
     private val stateRepository: StateRepository = mockk()
     private val tradeRepository: TradeRepository = mockk()
-    private val tradeClient: TradeClient = mockk()
+    private val tradeClient: BinanceTradeClient = mockk()
 
     @Test
     fun testSimpleLongStrategy(){
@@ -71,7 +71,7 @@ class TestTradingBot {
         )
 
         val bot = TradingBot(
-            tradeClient = tradeClient,
+            binanceTradeClient = tradeClient,
             completedTradeRepository = completedTradeRepository,
             stateRepository = stateRepository,
             tradeRepository = tradeRepository
@@ -150,7 +150,7 @@ class TestTradingBot {
         )
 
         val bot = TradingBot(
-            tradeClient = tradeClient,
+            binanceTradeClient = tradeClient,
             completedTradeRepository = completedTradeRepository,
             stateRepository = stateRepository,
             tradeRepository = tradeRepository

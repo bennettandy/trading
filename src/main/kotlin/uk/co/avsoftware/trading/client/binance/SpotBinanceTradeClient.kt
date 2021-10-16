@@ -17,13 +17,13 @@ import uk.co.avsoftware.trading.client.binance.sign.BinanceSigner
 import java.io.IOException
 import javax.annotation.PostConstruct
 
-interface TradeClient {
+interface BinanceTradeClient {
     fun placeNewOrder(newOrderRequest: NewOrderRequest): Mono<OrderResponse>
 }
 
 @Component
 @Profile("test")
-class DummyTradeClient : TradeClient {
+class DummyBinanceTradeClient : BinanceTradeClient {
     private val logger = KotlinLogging.logger {}
 
     override fun placeNewOrder(newOrderRequest: NewOrderRequest): Mono<OrderResponse> {
@@ -54,10 +54,10 @@ class DummyTradeClient : TradeClient {
 
 @Component
 @Profile("production")
-class SpotTradeClient(
+class SpotBinanceTradeClient(
     @Qualifier("binanceApiClient") val binanceWebClient: WebClient,
     val binanceSigner: BinanceSigner
-    ): TradeClient {
+    ): BinanceTradeClient {
 
     private val logger = KotlinLogging.logger {}
 

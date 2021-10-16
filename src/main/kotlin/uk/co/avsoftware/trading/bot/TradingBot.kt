@@ -4,12 +4,13 @@ import mu.KotlinLogging
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.ServerResponse
 import reactor.core.publisher.Mono
-import uk.co.avsoftware.trading.client.binance.TradeClient
+import uk.co.avsoftware.trading.client.binance.BinanceTradeClient
 import uk.co.avsoftware.trading.client.binance.model.OrderSide
 import uk.co.avsoftware.trading.client.binance.model.OrderType
 import uk.co.avsoftware.trading.client.binance.model.NewOrderRequest
 import uk.co.avsoftware.trading.client.binance.model.OrderResponse
 import uk.co.avsoftware.trading.client.binance.model.orderQuantity
+import uk.co.avsoftware.trading.client.bybit.BybitTradeClient
 import uk.co.avsoftware.trading.database.model.Direction
 import uk.co.avsoftware.trading.database.model.SignalEvent
 import uk.co.avsoftware.trading.database.model.State
@@ -19,7 +20,8 @@ import uk.co.avsoftware.trading.repository.TradeRepository
 
 @Component
 class TradingBot(
-    val tradeClient: TradeClient,
+    val binanceTradeClient: BinanceTradeClient,
+    val bybitTradeClient: BybitTradeClient,
     val stateRepository: StateRepository,
     val tradeRepository: TradeRepository,
     val completedTradeRepository: CompletedTradeRepository
@@ -35,7 +37,7 @@ class TradingBot(
             .doOnSuccess { logger.info { "passed filter $symbol NOT already long $it" } }
             .checkpoint("place new long trade")
             .flatMap { state ->
-                tradeClient.placeNewOrder(longRequest(state.position_size, state.symbol))
+                binanceTradeClient.placeNewOrder(longRequest(state.position_size, state.symbol))
                     .doOnSuccess { logger.info { "save $symbol long order response ${state.position_size}" } }
                     .checkpoint("save long order response")
                     .flatMap { orderResponse ->
@@ -117,7 +119,7 @@ class TradingBot(
         return Mono.just(reversalTrade(orderResponse, state.symbol, orderResponse.orderQuantity()))
             // order to fully close position
             .flatMap { newOrderRequest ->
-                tradeClient.placeNewOrder(newOrderRequest)
+                binanceTradeClient.placeNewOrder(newOrderRequest)
                     .checkpoint("place new order to close position")
                     .doOnSuccess { logger.info { "Closed trade with ${newOrderRequest.side}" } }
                     // save the trade
@@ -146,7 +148,7 @@ class TradingBot(
 
     private fun partialTakeProfit(orderResponse: OrderResponse, state: State): Mono<State> {
         return Mono.just(state.remaining_position / TAKE_PROFIT_DIVISOR)
-            .flatMap { qty -> tradeClient.placeNewOrder(reversalTrade(orderResponse, state.symbol, qty ))
+            .flatMap { qty -> binanceTradeClient.placeNewOrder(reversalTrade(orderResponse, state.symbol, qty ))
                     .checkpoint("place new order to close position")
                     .doOnSuccess { logger.info { "Closed trade with $qty ${it.side}" } }
                     // save the trade
