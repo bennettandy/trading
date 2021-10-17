@@ -9,81 +9,102 @@ import uk.co.avsoftware.trading.client.binance.model.OrderSide
 import uk.co.avsoftware.trading.client.binance.model.OrderType
 import uk.co.avsoftware.trading.client.binance.model.NewOrderRequest
 import uk.co.avsoftware.trading.client.binance.model.OrderResponse
-import uk.co.avsoftware.trading.client.binance.model.orderQuantity
 import uk.co.avsoftware.trading.client.bybit.BybitTradeClient
-import uk.co.avsoftware.trading.database.model.Direction
-import uk.co.avsoftware.trading.database.model.SignalEvent
-import uk.co.avsoftware.trading.database.model.State
-import uk.co.avsoftware.trading.repository.CompletedTradeRepository
+import uk.co.avsoftware.trading.database.model.*
+import uk.co.avsoftware.trading.repository.OpenTradeRepository
 import uk.co.avsoftware.trading.repository.StateRepository
-import uk.co.avsoftware.trading.repository.TradeRepository
+import uk.co.avsoftware.trading.repository.service.OpenTradeService
+import java.time.Instant
 
 @Component
 class TradingBot(
     val binanceTradeClient: BinanceTradeClient,
     val bybitTradeClient: BybitTradeClient,
     val stateRepository: StateRepository,
-    val tradeRepository: TradeRepository,
-    val completedTradeRepository: CompletedTradeRepository
+    val openTradeRepository: OpenTradeRepository,
+    val openTradeService: OpenTradeService,
 ) {
 
     private val logger = KotlinLogging.logger {}
 
     fun longTrigger(symbol: String): Mono<State> =
         stateRepository.updateStateWithEvent(symbol, SignalEvent.LONG)
-            .checkpoint("get state")
-            .doOnSuccess { logger.info("LONG TRIGGER $symbol : State $it") }
-            .filter { it.direction != Direction.LONG }
-            .doOnSuccess { logger.info { "passed filter $symbol NOT already long $it" } }
-            .checkpoint("place new long trade")
             .flatMap { state ->
-                binanceTradeClient.placeNewOrder(longRequest(state.position_size, state.symbol))
-                    .doOnSuccess { logger.info { "save $symbol long order response ${state.position_size}" } }
-                    .checkpoint("save long order response")
-                    .flatMap { orderResponse ->
-                        tradeRepository.saveOrderResponse(orderResponse)
-                            .doOnSuccess { logger.info { "Saved new $symbol long order response ref: $it" } }
-                            .checkpoint("update state with new open long order")
-                            .flatMap { orderDocReference ->
-                                stateRepository.updateState(
-                                    state.copy(
-                                        open_position = orderDocReference,
-                                        // fully open position
-                                        remaining_position = state.position_size,
-                                        direction = Direction.LONG // set direction
+                if (state.direction != Direction.LONG) {
+                    logger.info { "passed filter $symbol NOT already long $state" }
+                    binanceTradeClient.placeNewOrder(longRequest(state.position_size, state.symbol))
+                        .doOnSuccess { logger.info { "save $symbol long order response ${state.position_size}" } }
+                        .flatMap { orderResponse ->
+                            openTradeRepository.createNewOpenTrade(orderResponse, state, Direction.LONG)
+                                .flatMap { openTradeDocReference ->
+                                    stateRepository.updateState(
+                                        state.copy(
+                                            open_position = openTradeDocReference,
+                                            // fully open position
+                                            remaining_position = state.position_size,
+                                            direction = Direction.LONG // set direction
+                                        )
                                     )
-                                )
-                            }
-                    }
+                                }
+                        }
+                } else {
+                    logger.info { "Already Long $symbol already long $state" }
+                    Mono.just(state)
+                }
             }
 
 
     fun shortTrigger(symbol: String): Mono<State> =
         stateRepository.updateStateWithEvent(symbol, SignalEvent.SHORT)
-            .checkpoint("get state")
-            .doOnSuccess { logger.info("SHORT TRIGGER $symbol : State $it") }
-            .filter { it.direction == Direction.LONG } // close any long position fully
-            .doOnSuccess { logger.info("Passed $symbol We Are Currently LONG : State $it") }
             .flatMap { state ->
-                stateRepository.getTrade(state)
-                    .checkpoint("close any open Long trade")
-                    // if no trade, get trade is Mono.empty() -> thenReturn always emits 'state'
-                    .flatMap { openTrade -> closeAndCompleteOpenTrade(openTrade, state) }
+                if (state.direction == Direction.LONG) {
+                    logger.info { "passed filter $symbol We are currently LONG $state" }
+                    // close remaining position
+                    binanceTradeClient.placeNewOrder(shortRequest(state.remaining_position, state.symbol))
+                        .flatMap { closingOrder: OrderResponse ->
+                            openTradeRepository.addClosingOrder(closingOrder, state, direction = Direction.SHORT)
+                                .flatMap { openTradeRepository.closeOrder(state) }
+                                .flatMap {
+                                    stateRepository.updateState(
+                                        state.copy(
+                                            open_position = null,
+                                            remaining_position = 0.0,
+                                            direction = Direction.NONE
+                                        )
+                                    )
+                                }
+                        }
+                } else {
+                    logger.info { "Already Long $symbol already long $state" }
+                    Mono.just(state)
+                }
             }
-            .doOnSuccess { state -> logger.info { "closed any existing $symbol trade, got state $state" } }
-
 
     fun longTakeProfit(symbol: String): Mono<State> =
-        stateRepository.updateStateWithEvent(symbol, SignalEvent.LONG_TP)
-            .checkpoint("get state")
-            .doOnSuccess { logger.info("LONG TAKE PROFIT $symbol : State $it") }
+        stateRepository.updateStateWithEvent(symbol, SignalEvent.SHORT)
             .flatMap { state ->
-                stateRepository.getTrade(state)
-                    .checkpoint("partial take profit $symbol trade")
-                    // if no trade, get trade is Mono.empty() -> thenReturn always emits 'state'
-                    .flatMap { openTrade -> partialTakeProfit(openTrade, state) }
+                if (state.direction == Direction.LONG) {
+                    logger.info { "passed filter $symbol is LONG $state" }
+                    // close portion of remaining position
+                    val tradeSize = state.remaining_position / TAKE_PROFIT_DIVISOR
+                    logger.info { "Selling $tradeSize $symbol" }
+                    binanceTradeClient.placeNewOrder(shortRequest(tradeSize, state.symbol))
+                        .flatMap { closingOrder ->
+                            openTradeRepository.addClosingOrder(closingOrder, state, direction = Direction.SHORT)
+                                // Take Profit doesn't close the order here
+                                .flatMap {
+                                    stateRepository.updateState(
+                                        state.copy(
+                                            remaining_position = state.remaining_position - tradeSize,
+                                        )
+                                    )
+                                }
+                        }
+                } else {
+                    logger.info { "Ignoring $symbol Not currently long $state" }
+                    Mono.just(state)
+                }
             }
-            .doOnSuccess { _ -> logger.info { "partial TP on $symbol trade" } }
 
     fun shortTakeProfit(symbol: String): Mono<State> =
         stateRepository.updateStateWithEvent(symbol, SignalEvent.SHORT_TP)
@@ -104,92 +125,40 @@ class TradingBot(
     }
 
     fun test(): Mono<ServerResponse> {
-        return ServerResponse.ok().build()
+        return openTradeService.saveNewOpenTrade(
+            OpenTrade(
+                exchange = "binance",
+                symbol = "SOLBTC",
+                direction = Direction.LONG,
+                open_fills = listOf(
+                    TradeFill(
+                        timestamp = Instant.now().toEpochMilli(),
+                        symbol = "SOL",
+                        price = 120.0,
+                        qty = 2.0,
+                        commission = 0.0002,
+                        commissionAsset = "BNB"
+                    ),
+                    TradeFill(
+                        timestamp = Instant.now().toEpochMilli(),
+                        symbol = "SOL",
+                        price = 121.0,
+                        qty = 5.0,
+                        commission = 0.0003,
+                        commissionAsset = "BNB"
+                    )
+                )
+            )
+        )
+            .flatMap { ServerResponse.ok().build() }
     }
 
     fun testOpen(): Mono<ServerResponse> {
-        return bybitTradeClient.placeOrder("ETHUSDT",
-            uk.co.avsoftware.trading.client.bybit.model.OrderSide.BUY,
-            quantity = 150.0
-        )
-            .doOnSuccess{ logger.info { "RESULT: $it" }}
-            .flatMap { ServerResponse.ok().build() }
+        return ServerResponse.ok().build()
     }
 
     fun testClose(): Mono<ServerResponse> {
         return ServerResponse.ok().build()
-    }
-
-    private fun closeAndCompleteOpenTrade(orderResponse: OrderResponse, state: State): Mono<State> {
-        return Mono.just(reversalTrade(orderResponse, state.symbol, orderResponse.orderQuantity()))
-            // order to fully close position
-            .flatMap { newOrderRequest ->
-                binanceTradeClient.placeNewOrder(newOrderRequest)
-                    .checkpoint("place new order to close position")
-                    .doOnSuccess { logger.info { "Closed trade with ${newOrderRequest.side}" } }
-                    // save the trade
-                    .flatMap { closeOrderResponse ->
-                        tradeRepository.saveOrderResponse(closeOrderResponse)
-                            .checkpoint("saved closing trade to DB")
-                            .doOnSuccess { logger.info { "saved closing trade to DB $it" } }
-                            .flatMap {
-                                completedTradeRepository.createCompletedTrade(orderResponse, closeOrderResponse, state)
-                                    .checkpoint("crete Completed Trade document")
-                            }
-                            .doOnSuccess { logger.info { "Saved Completed Trade to DB" } }
-                    }
-                    // update state entity
-                    .flatMap {
-                        stateRepository.updateState(
-                            state.copy(
-                                direction = Direction.NONE,
-                                open_position = null,
-                                remaining_position = 0.0
-                            )
-                        )
-                    }
-            }
-    }
-
-    private fun partialTakeProfit(orderResponse: OrderResponse, state: State): Mono<State> {
-        return Mono.just(state.remaining_position / TAKE_PROFIT_DIVISOR)
-            .flatMap { qty -> binanceTradeClient.placeNewOrder(reversalTrade(orderResponse, state.symbol, qty ))
-                    .checkpoint("place new order to close position")
-                    .doOnSuccess { logger.info { "Closed trade with $qty ${it.side}" } }
-                    // save the trade
-                    .flatMap { closeOrderResponse ->
-                        tradeRepository.saveOrderResponse(closeOrderResponse)
-                            .checkpoint("saved closing trade to DB")
-                            .doOnSuccess { logger.info { "saved closing trade to DB $it" } }
-                            .flatMap {
-                                completedTradeRepository.createCompletedTrade(orderResponse, closeOrderResponse, state)
-                                    .checkpoint("crete Completed Trade document")
-                            }
-                            .doOnSuccess { logger.info { "Saved Completed Trade to DB" } }
-                    }
-                    // update state entity
-                    .flatMap {
-                        stateRepository.updateState(
-                            state.copy(
-                                // only update remaining position, trade stays open
-                                remaining_position = state.remaining_position - qty
-                            )
-                        )
-                    }
-            }
-    }
-
-    private fun reversalTrade(orderResponse: OrderResponse, symbol: String, size: Double): NewOrderRequest {
-        return when (orderResponse.side) {
-            OrderSide.SELL -> longRequest(
-                size,
-                symbol
-            ) // closing a sell order with a corresponding buy
-            else -> shortRequest(
-                size,
-                symbol
-            ) // else close buy order with a corresponding sell
-        }
     }
 
     private fun longRequest(tradeAmount: Double, symbol: String) =

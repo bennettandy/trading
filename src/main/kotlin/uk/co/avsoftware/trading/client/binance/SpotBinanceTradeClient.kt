@@ -35,7 +35,7 @@ class DummyBinanceTradeClient : BinanceTradeClient {
                         price = 10.0,
                         qty = quantity,
                         commission = 0.0023,
-                        commissionAsset = newOrderRequest.symbol
+                        commissionAsset = "BNB"
                     )
                 ),
                 symbol = "SOLBTC",

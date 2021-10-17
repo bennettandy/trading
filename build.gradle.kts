@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "uk.co.avsoftware"
-version = "0.0.6"
+version = "0.0.7"
 java.sourceCompatibility = JavaVersion.VERSION_11
 
 repositories {
@@ -17,7 +17,7 @@ repositories {
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-webflux:2.5.5")
-	implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.12.5")
+	implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.0")
 	implementation("io.projectreactor.kotlin:reactor-kotlin-extensions:1.1.4")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
@@ -27,7 +27,7 @@ dependencies {
 
 	implementation("com.google.cloud:spring-cloud-gcp-starter-secretmanager:2.0.4")
 	implementation ("com.google.api-client:google-api-client:1.32.1")
-	implementation ("com.google.http-client:google-http-client:1.40.0")
+	implementation ("com.google.http-client:google-http-client:1.40.1")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test:2.5.5")
 	testImplementation("io.projectreactor:reactor-test:3.4.10")
